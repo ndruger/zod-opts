@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "strict": true,
+    "strictNullChecks": true,
+    "alwaysStrict": true,
+    "noImplicitAny": true,
+    "strictFunctionTypes": true,
+    "target": "ES2019",
+    "module": "CommonJS",
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "incremental": true,
+    "declaration": true
+  },
+  "include": ["./src/*.ts", "./test/*.ts", "./example/*.ts"]
+}

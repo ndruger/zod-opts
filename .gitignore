@@ -1,0 +1,11 @@
+.yarn/
+!.yarn/releases/*
+npm-debug.log
+node_modules
+/dist
+/result
+token.json
+tsconfig.tsbuildinfo
+/.vscode
+/coverage
+/reference
