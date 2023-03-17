@@ -111,7 +111,7 @@ export class Parser<
     });
   }
 
-  handler<TShape extends GenerateZodShape<TOptions, TPositionalArgs>>(
+  _internalHandler<TShape extends GenerateZodShape<TOptions, TPositionalArgs>>(
     handler: (
       arg0:
         | ParseResultMatch<z.infer<ZodObject<TShape>>>

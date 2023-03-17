@@ -912,7 +912,7 @@ Options:
               description: "desc8",
             },
           ])
-          .handler((result) => {
+          ._internalHandler((result) => {
             expect(result).toEqual({
               type: "help",
               help: expect.stringContaining("Usage: scriptA"),
@@ -942,7 +942,7 @@ Options:
             opt1: { type: z.string().describe("desc1") },
           })
           .args([])
-          .handler((result) => {
+          ._internalHandler((result) => {
             expect(result).toEqual({
               type: "version",
               help: expect.stringContaining("Usage: scriptA"),
@@ -1003,7 +1003,7 @@ Options:
         .options({
           opt1: { type: z.string() },
         })
-        .handler((result) => {
+        ._internalHandler((result) => {
           expect(result).toEqual({
             type: "match",
             parsed: { opt1: "str1" },
@@ -1025,7 +1025,7 @@ Options:
           .options({
             opt1: { type: z.string() },
           })
-          .handler((result) => {
+          ._internalHandler((result) => {
             expect(result).toEqual({
               type: "error",
               error: new ParseError("Invalid option: -invalid=10"),
@@ -1053,7 +1053,7 @@ Options:
           .options({
             opt1: { type: z.string() },
           })
-          .handler((result) => {
+          ._internalHandler((result) => {
             expect(result).toEqual({
               type: "error",
               error: new ParseError("Required option is missing: opt1"),

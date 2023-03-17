@@ -72,8 +72,7 @@ export class CommandParser {
     return this;
   }
 
-  // TODO: hide this method
-  handler(
+  _internalHandler(
     handler: (
       arg0:
         | ParseResultMatch<z.infer<ZodObject<z.ZodRawShape>>>

@@ -302,7 +302,7 @@ Options:
               expect(1).toBe(0);
             })
         )
-        .handler((result) => {
+        ._internalHandler((result) => {
           expect(result).toEqual({
             type: "error",
             error: new ParseError("Unknown argument: missing_command"),
@@ -332,7 +332,7 @@ Options:
               expect(1).toBe(0);
             })
         )
-        .handler((result) => {
+        ._internalHandler((result) => {
           expect(result).toEqual({
             commandName: "command1",
             type: "error",
@@ -364,7 +364,7 @@ Options:
               expect(1).toBe(0);
             })
         )
-        .handler((result) => {
+        ._internalHandler((result) => {
           expect(result).toEqual({
             commandName: "command1",
             type: "error",
@@ -399,7 +399,7 @@ Options:
                 expect(1).toBe(0);
               })
           )
-          .handler((result) => {
+          ._internalHandler((result) => {
             expect(result).toEqual({
               commandName: "command1",
               type: "error",
