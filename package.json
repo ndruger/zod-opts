@@ -12,6 +12,7 @@
     "cli",
     "command"
   ],
+  "author": "ndruger",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^29.2.6",
