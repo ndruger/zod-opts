@@ -19,6 +19,8 @@ A library that simplifies the process of parsing and validating command-line arg
     - [Custom validation](#custom-validation)
     - [Variadic arguments](#variadic-arguments)
   - [Commands](#commands)
+  - [Help](#help)
+  - [Version](#version)
 
 <!-- /TOC -->
 
@@ -154,6 +156,10 @@ Options:
       --option2 <string>
       --option3 <number>                                              [required]
       --option4 <string>  (choices: "a", "b", "c") (default: "b")
+
+# Version
+$  node complex.js --version
+1.0.0
 ```
 
 ## Options
@@ -263,11 +269,11 @@ console.log(parsed);
 
 ```bash
 # Valid options
-$ node dist/example/array.js str1 str2
+$ node array.js str1 str2
 { pos: [ 'str1', 'str2' ] }
 
 # Invalid options (empty array is not permitted. use `.default([])` instead).
-$ node dist/example/array.js
+$ node array.js
 Required option is missing: pos
 
 Usage: array.js [options] <pos ...>
@@ -310,11 +316,11 @@ console.log(parsed);
 
 ```bash
 # Valid options
-$ node dist/example/custom_validation.js --option1=10 --option2=11
+$ node custom_validation.js --option1=10 --option2=11
 { option1: 10, option2: 11 }
 
 # Invalid options
-$ node dist/example/custom_validation.js --option1=10 --option2=10
+$ node custom_validation.js --option1=10 --option2=10
 option1 and option2 must be different
 
 Usage: custom_validation.js [options]
@@ -331,4 +337,81 @@ Please refer [array types](#array-types).
 
 ## Commands
 
-TODO
+File [command.ts](./example/command.ts)
+
+```ts
+import { z } from "zod";
+import { parser } from "zod-opts";
+
+const command1 = command("command1")
+  .options({
+    option1: {
+      type: z.boolean().default(false),
+    },
+  })
+  .action((parsed) => {
+    // parsed is inferred as { option1: boolean }
+    console.log("command2", parsed);
+  });
+
+const command2 = command("command2")
+  .options({
+    option1: {
+      type: z.string(),
+    },
+  })
+  .action((parsed) => {
+    // parsed is inferred as { option1: string }
+    console.log("command2", parsed);
+  });
+
+parser().subcommand(command1).subcommand(command2).parse();
+```
+
+```bash
+# Valid options
+$ node command.js command1 --option1
+command1 { option1: true }
+
+# Invalid options
+$  node command.js command2 a
+Too many positional arguments
+
+Usage: command.js command2 [options]
+
+Options:
+  -h, --help              Show help
+      --option1 <string>             [required]
+
+# Global help
+$ node command.js --help
+Usage: command.js [options] <command>
+
+Commands:
+  command1
+  command2
+
+Options:
+  -h, --help  Show help
+
+# Command help
+$ node command.js command1 --help
+Usage: command.js command1 [options]
+
+Options:
+  -h, --help     Show help
+      --option1  (default: false)
+```
+
+## Help
+
+You can `.showHelp()` to show help message. And `.getHelp()` returns the help message.
+
+## Version
+
+If the parser has called with `.version()` method, The user can show the version with `--version` or `-V` option.
+
+```bash
+$ node complex.js --version
+1.0.0
+```
