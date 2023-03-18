@@ -801,6 +801,39 @@ describe("parse()", () => {
     });
   });
 
+  describe("refine", () => {
+    test("success", () => {
+      const a = z.string().refine((v) => v === "foo" || v === "bar", {
+        message: "option1 must be foo or bar",
+      });
+      const parsed = parser()
+        .options({
+          opt1: {
+            type: a,
+          },
+        })
+        .parse(["--opt1", "foo"]);
+      expectTypeOf(parsed).toEqualTypeOf<{
+        opt1: string;
+      }>();
+    });
+
+    test("error", () => {
+      expectProcessExit("option1 must be foo or bar: opt1", 1, () => {
+        const a = z.string().refine((v) => v === "foo" || v === "bar", {
+          message: "option1 must be foo or bar",
+        });
+        parser()
+          .options({
+            opt1: {
+              type: a,
+            },
+          })
+          .parse(["--opt1", "other"]);
+      });
+    });
+  });
+
   describe("custom validation", () => {
     test("success", () => {
       const parsed = parser()
@@ -1137,28 +1170,3 @@ describe("type test", () => {
     expectTypeOf(parsed).toEqualTypeOf<OptionParamsT>();
   });
 });
-
-// // TODO: Support zod .refine()
-// describe("refine test", () => {
-//   test.only("", () => {
-//     const a = z
-//       .string()
-//       .default("aa")
-//       .refine((v) => v === "foo" || v === "bar", {
-//         message: "option1 must be foo or bar",
-//       });
-//     const parsed = parser()
-//       .name("scriptA")
-//       .version("1.0.0")
-//       .description("desc")
-//       .options({
-//         opt1: {
-//           type: a,
-//         },
-//       })
-//       .parse(["--opt1", "foo"]);
-//     expectTypeOf(parsed).toEqualTypeOf<{
-//       opt1: string;
-//     }>();
-//   });
-// });

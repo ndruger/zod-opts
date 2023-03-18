@@ -1,6 +1,6 @@
 # ZodOpts
 
-![ci](https://github.com/ndruger/zod-opts/actions/workflows/ci/badge.svg)
+[![CI](https://github.com/ndruger/zod-opts/actions/workflows/ci.yml/badge.svg)](https://github.com/ndruger/zod-opts/actions/workflows/ci.yml)
 [![NPM Version](http://img.shields.io/npm/v/zod-opts.svg?style=flat)](https://www.npmjs.org/package/zod-opts)
 
 A library that simplifies the process of parsing and validating command-line arguments using the [Zod](https://github.com/colinhacks/zod) validation library

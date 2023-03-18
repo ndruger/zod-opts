@@ -197,27 +197,22 @@ describe("validatePositionalCandidateValue()", () => {
   });
 });
 
-// todo: add many case
 describe("validate()", () => {
-  test.each([
-    {
-      params: {
-        args: ["--opt1", "opt_str1"],
-        options: [createInternalOption({ name: "opt1" })],
-        positionalArgs: [],
-      },
-      expected: {
-        candidates: [
-          {
-            name: "opt1",
-            value: "opt_str1",
-          },
-        ],
-        positionalCandidates: [],
-      },
-    },
-  ])("normal %# %j", ({ params, expected }) => {
-    const parsed = parse(params as any);
-    validate(parsed, params.options, params.positionalArgs);
+  test("returns validated result", () => {
+    const params = {
+      options: [createInternalOption({ name: "opt1" })],
+      positionalArgs: [],
+      args: ["--opt1", "opt_str1"],
+    };
+    const parsed = parse(params);
+    expect(validate(parsed, params.options, params.positionalArgs)).toEqual({
+      options: [
+        {
+          name: "opt1",
+          value: "opt_str1",
+        },
+      ],
+      positionalArgs: [],
+    });
   });
 });

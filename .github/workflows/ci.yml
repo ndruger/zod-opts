@@ -21,5 +21,9 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: npm ci
       - run: npm rum build
-      - run: npm test
       - run: npm run lint
+      - run: npm test_cov
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
