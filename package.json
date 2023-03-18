@@ -38,7 +38,6 @@
   "dependencies": {
     "zod": "^3.20.2"
   },
-  "prepublish": "npm run build",
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
     "watch": "tsc -w",
@@ -46,7 +45,9 @@
     "test_cov": "jest --silent=false --collect-coverage",
     "format": "prettier --write 'rule/**/*.yml' 'src/**/*.ts' 'test/**/*.ts'",
     "lint": "eslint src/**/*.ts test/**/*.ts",
-    "fix": "eslint --fix src/**/*.ts test/**/*.ts"
+    "fix": "eslint --fix src/**/*.ts test/**/*.ts",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run test && npm run lint"
   },
   "engines": {
     "node": ">=16"
