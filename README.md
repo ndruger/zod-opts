@@ -4,7 +4,7 @@
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 [![CI](https://github.com/ndruger/zod-opts/actions/workflows/ci.yml/badge.svg)](https://github.com/ndruger/zod-opts/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/ndruger/zod-opts/branch/master/graph/badge.svg?token=TX7GCMBT8U)](https://codecov.io/gh/ndruger/zod-opts)
-[![Minified size](https://img.shields.io/bundlephobia/min/zod-opts)](https://packagephobia.now.sh/result?p=zod-opts)
+[![Minified size](https://img.shields.io/bundlephobia/min/zod-opts)](https://bundlephobia.com/package/zod-opts)
 
 A library that simplifies the process of parsing and validating command-line arguments using the [Zod](https://github.com/colinhacks/zod) validation library
 
