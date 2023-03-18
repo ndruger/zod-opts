@@ -20,9 +20,8 @@ jobs:
           cache: "npm"
           node-version: ${{ matrix.node }}
       - run: npm ci
-      - run: npm rum build
       - run: npm run lint
-      - run: npm run test_cov
+      - run: npm run test_cov # ts-jest doesn't need build js files
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
