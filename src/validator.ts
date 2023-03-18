@@ -8,6 +8,7 @@ import type {
   InternalOption,
   InternalPositionalArg,
 } from "./type";
+import * as util from "./util";
 
 interface ValidValue {
   value: string | number | boolean;
@@ -120,7 +121,7 @@ export function validate(
     if (validated === undefined) {
       throw new ParseError(
         `Invalid option value. ${option.type} is expected: ${candidate.name}`
-      ); // todo:
+      );
     }
     return [candidate.name, validated.value];
   });
@@ -137,25 +138,31 @@ export function validate(
       candidate.value
     );
     if (validated === undefined) {
-      throw new ParseError(`Invalid positional option: ${name}`); // todo:
+      throw new ParseError(`Invalid positional argument value: ${name}`);
     }
     return [candidate.name, validated.value];
   });
 
   debugLog("validate", { validOptionValues, validPositionalArgValues });
 
-  const uniqValidOptionNames = Object.keys(
-    Object.fromEntries(validOptionValues)
+  const duplicatedOptionNames = util.findDuplicatedValues(
+    validOptionValues.map(([name]) => name)
   );
-  if (validOptionValues.length !== uniqValidOptionNames.length) {
-    throw new ParseError("Duplicate option"); // todo:
+  if (duplicatedOptionNames.length !== 0) {
+    throw new ParseError(
+      `Duplicated option: ${duplicatedOptionNames.join(", ")}`
+    );
   }
 
-  const uniqValidPositionalArgNames = Object.keys(
-    Object.fromEntries(validPositionalArgValues)
+  const duplicatedPositionalArgNames = util.findDuplicatedValues(
+    validPositionalArgValues.map(([name]) => name)
   );
-  if (validPositionalArgValues.length !== uniqValidPositionalArgNames.length) {
-    throw new ParseError("Duplicate positional option"); // todo:
+  if (duplicatedPositionalArgNames.length !== 0) {
+    throw new ParseError(
+      `Duplicated positional argument: ${duplicatedPositionalArgNames.join(
+        ", "
+      )}`
+    );
   }
 
   const validOptionValueSet = new Map(validOptionValues);

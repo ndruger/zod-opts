@@ -14,6 +14,10 @@ export function uniq<T>(array: T[]): T[] {
   return [...new Set(array)];
 }
 
+export function findDuplicatedValues(array: string[]): string[] {
+  return array.filter((e, i, a) => a.indexOf(e) !== i);
+}
+
 export function errorExit(
   parseResult: ParseResultError | ParseResultHelp | ParseResultVersion,
   version: string = "none"
@@ -54,17 +58,13 @@ function validateParamOption(name: string, { alias }: Option): void {
 function validateParamPositionalArg({ name }: PositionalArg): void {
   if (!IdSchema.safeParse(name).success) {
     throw new Error(
-      `Invalid positional option name. Supported pattern is /${IdRegexStr}/: ${name}`
+      `Invalid positional argument name. Supported pattern is /${IdRegexStr}/: ${name}`
     );
   }
 }
 
-function getDuplicatedInputs(array: string[]): string[] {
-  return array.filter((e, i, a) => a.indexOf(e) !== i);
-}
-
 function checkIfOptionNamesDuplicated(options: Options | undefined): void {
-  const duplicatedName = getDuplicatedInputs(Object.keys(options ?? {}));
+  const duplicatedName = findDuplicatedValues(Object.keys(options ?? {}));
   if (duplicatedName.length !== 0) {
     throw new Error(`Duplicated option name: ${duplicatedName.join(", ")}`);
   }
@@ -73,12 +73,12 @@ function checkIfOptionNamesDuplicated(options: Options | undefined): void {
 function checkIfPositionalOptionNamesDuplicated(
   positionalArgs: PositionalArgs
 ): void {
-  const duplicatedName = getDuplicatedInputs(
+  const duplicatedName = findDuplicatedValues(
     positionalArgs.map((option) => option.name)
   );
   if (duplicatedName.length !== 0) {
     throw new Error(
-      `Duplicated positional option name: ${duplicatedName.join(", ")}`
+      `Duplicated positional argument name: ${duplicatedName.join(", ")}`
     );
   }
 }
@@ -89,7 +89,7 @@ function checkIfOptNameUsedWithPositionalOption(
   Object.keys(options).forEach((optionName) => {
     if (positionalArgs.some((option) => option.name === optionName)) {
       throw new Error(
-        `Duplicated option name with positional option name: ${optionName}`
+        `Duplicated option name with positional argument name: ${optionName}`
       );
     }
   });

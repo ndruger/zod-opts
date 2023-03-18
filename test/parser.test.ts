@@ -1,9 +1,10 @@
 import { expectTypeOf } from "expect-type";
 import { z } from "zod";
 
+import { command } from "../src/command";
 import { ParseError } from "../src/error";
 import { parser } from "../src/parser";
-import { expectExit0, expectProcessExit } from "./test_util";
+import { expectExit0, expectProcessExit, mockConsole } from "./test_util";
 
 describe("parse()", () => {
   describe("complex", () => {
@@ -72,7 +73,7 @@ describe("parse()", () => {
       expectTypeOf(parsed).toEqualTypeOf<{ opt1: string; opt2: number }>();
     });
 
-    test("returns parsed args when positional options are empty", () => {
+    test("returns parsed args when positional arguments are empty", () => {
       const parsed = parser()
         .options({
           opt1: { type: z.string(), description: "a" },
@@ -257,7 +258,7 @@ describe("parse()", () => {
       });
 
       test("error on required arg", () => {
-        expectProcessExit("Invalid option: --opt1", 1, () =>
+        expectProcessExit("Option 'opt1' needs value: opt1", 1, () =>
           parser()
             .options({ opt1: { type: z.string() } })
             .parse(["--opt1"])
@@ -347,7 +348,7 @@ describe("parse()", () => {
       });
 
       test("error on required arg", () => {
-        expectProcessExit("Invalid option: --opt1", 1, () =>
+        expectProcessExit("Option 'opt1' needs value: opt1", 1, () =>
           parser()
             .options({ opt1: { type: z.number() } })
             .parse(["--opt1"])
@@ -399,24 +400,12 @@ describe("parse()", () => {
         });
       });
 
-      test("error wrong format", () => {
-        expectProcessExit(
-          "Invalid option value. boolean is expected: opt",
-          1,
-          () => {
-            parser()
-              .options({ opt: { type: z.boolean() } })
-              .parse(["--opt=str1"]);
-          }
-        );
-      });
-
-      test("error on boolean in positional options", () => {
+      test("error on boolean in positional arguments", () => {
         expect(() => {
           parser()
             .args([{ name: "opt", type: z.boolean() }])
             .parse([]);
-        }).toThrow("Unsupported zod type (Positional options): ZodBoolean");
+        }).toThrow("Unsupported zod type (positional argument): ZodBoolean");
       });
 
       test("default with arg", () => {
@@ -477,6 +466,38 @@ describe("parse()", () => {
         expectTypeOf(parsed).toEqualTypeOf<{
           opt?: boolean;
         }>();
+      });
+
+      test("error when --opt=str", () => {
+        expectProcessExit(
+          "Boolean option 'opt' does not need value: opt",
+          1,
+          () => {
+            parser()
+              .options({ opt: { type: z.boolean() } })
+              .parse(["--opt=str"]);
+          }
+        );
+      });
+
+      test("don't support --opt=true or --opt=false format", () => {
+        expectProcessExit(
+          "Boolean option 'opt' does not need value: opt",
+          1,
+          () => {
+            parser()
+              .options({ opt: { type: z.boolean() } })
+              .parse(["--opt=true"]);
+          }
+        );
+      });
+
+      test("error when -a10", () => {
+        expectProcessExit("Invalid option: 1", 1, () => {
+          parser()
+            .options({ opt: { type: z.boolean(), alias: "a" } })
+            .parse(["-a10"]);
+        });
       });
     });
 
@@ -574,7 +595,7 @@ describe("parse()", () => {
       });
 
       test("error on invalid string value", () => {
-        expectProcessExit("Invalid option: --opt", 1, () => {
+        expectProcessExit("Invalid option: opt", 1, () => {
           parser()
             .options({
               opt1: {
@@ -586,7 +607,7 @@ describe("parse()", () => {
       });
 
       test("error on invalid number value", () => {
-        expectProcessExit("Invalid option: --opt", 1, () => {
+        expectProcessExit("Invalid option: opt", 1, () => {
           parser()
             .options({
               opt1: {
@@ -689,14 +710,22 @@ describe("parse()", () => {
         );
       });
 
+      test("error on invalid value(number). invalid format", () => {
+        expectProcessExit("Invalid positional argument value: pos", 1, () => {
+          parser()
+            .args([{ name: "pos", type: z.array(z.number().min(10)) }])
+            .parse(["short"]);
+        });
+      });
+
       test("error on invalid value(number)", () => {
         expectProcessExit(
-          "String must contain at least 10 character(s): pos0",
+          "Number must be greater than or equal to 10: pos0",
           1,
           () => {
             parser()
-              .args([{ name: "pos", type: z.array(z.string().min(10)) }])
-              .parse(["short"]);
+              .args([{ name: "pos", type: z.array(z.number().min(10)) }])
+              .parse(["5"]);
           }
         );
       });
@@ -706,7 +735,7 @@ describe("parse()", () => {
           parser()
             .options({ opt: { type: z.array(z.string()) } })
             .parse(["--opt1", "str1"]);
-        }).toThrow("Unsupported zod type (Options): ZodArray");
+        }).toThrow("Unsupported zod type (options): ZodArray");
       });
 
       test("error on array of boolean", () => {
@@ -765,7 +794,7 @@ describe("parse()", () => {
 
   describe("format error", () => {
     test("no option value", () => {
-      expectProcessExit("Invalid option: -n", 1, () => {
+      expectProcessExit("Option 'opt1' needs value: opt1", 1, () => {
         parser()
           .options({
             opt1: { type: z.string(), description: "a", alias: "n" },
@@ -775,7 +804,7 @@ describe("parse()", () => {
     });
 
     test("invalid option", () => {
-      expectProcessExit("Invalid option: --opt1", 1, () => {
+      expectProcessExit("Invalid option: opt1", 1, () => {
         parser().parse(["--opt1", "opt1"]);
       });
     });
@@ -798,6 +827,49 @@ describe("parse()", () => {
             .parse(["--opt1", "str"]);
         }
       );
+    });
+
+    test("duplicated options", () => {
+      expectProcessExit("Duplicated option: opt1", 1, () => {
+        parser()
+          .options({
+            opt1: { type: z.string() },
+          })
+          .parse(["--opt1", "str", "--opt1", "str"]);
+      });
+    });
+  });
+
+  describe("refine", () => {
+    test("success", () => {
+      const a = z.string().refine((v) => v === "foo" || v === "bar", {
+        message: "option1 must be foo or bar",
+      });
+      const parsed = parser()
+        .options({
+          opt1: {
+            type: a,
+          },
+        })
+        .parse(["--opt1", "foo"]);
+      expectTypeOf(parsed).toEqualTypeOf<{
+        opt1: string;
+      }>();
+    });
+
+    test("error", () => {
+      expectProcessExit("option1 must be foo or bar: opt1", 1, () => {
+        const a = z.string().refine((v) => v === "foo" || v === "bar", {
+          message: "option1 must be foo or bar",
+        });
+        parser()
+          .options({
+            opt1: {
+              type: a,
+            },
+          })
+          .parse(["--opt1", "other"]);
+      });
     });
   });
 
@@ -995,7 +1067,8 @@ Options:
     });
   });
 
-  describe("handler()", () => {
+  // currently, custom handler is not supported and _internalHandler is internal function.
+  describe("_internalHandler()", () => {
     // help and version test is in describe("help") and describe("version")
     test("match", () => {
       parser()
@@ -1109,6 +1182,15 @@ Options:
   });
 });
 
+describe("showHelp()", () => {
+  test("shows help on console", () => {
+    const mockedConsoleLog = mockConsole("log");
+    parser().name("scriptA").version("1.0.0").description("desc").showHelp();
+    const logText = mockedConsoleLog.mock.calls.flat().join("\n");
+    expect(logText).toContain("Usage: scriptA [options]");
+  });
+});
+
 describe("type test", () => {
   const OptionParams = z.object({
     opt1: z.string(),
@@ -1138,27 +1220,91 @@ describe("type test", () => {
   });
 });
 
-// // TODO: Support zod .refine()
-// describe("refine test", () => {
-//   test.only("", () => {
-//     const a = z
-//       .string()
-//       .default("aa")
-//       .refine((v) => v === "foo" || v === "bar", {
-//         message: "option1 must be foo or bar",
-//       });
-//     const parsed = parser()
-//       .name("scriptA")
-//       .version("1.0.0")
-//       .description("desc")
-//       .options({
-//         opt1: {
-//           type: a,
-//         },
-//       })
-//       .parse(["--opt1", "foo"]);
-//     expectTypeOf(parsed).toEqualTypeOf<{
-//       opt1: string;
-//     }>();
-//   });
-// });
+describe("options()", () => {
+  describe("runtime error", () => {
+    test("throws runtime exception on invalid option name", () => {
+      expect(() => {
+        parser()
+          .options({
+            "--opt1": { type: z.string() },
+          })
+          .parse([]);
+      }).toThrow(
+        "Invalid option name. Supported pattern is /^[A-Za-z0-9_]+[A-Za-z0-9_-]*$/: --opt1"
+      );
+    });
+
+    test("throws runtime exception on invalid alias name", () => {
+      expect(() => {
+        parser()
+          .options({
+            opt1: { type: z.string(), alias: "-a" },
+          })
+          .parse([]);
+      }).toThrow(
+        "Invalid option alias. Supported pattern is /^[A-Za-z0-9_]+$/: -a"
+      );
+    });
+  });
+});
+
+describe("args()", () => {
+  describe("runtime error", () => {
+    test("throws runtime exception on invalid arg name", () => {
+      expect(() => {
+        parser()
+          .args([
+            {
+              name: "--arg1",
+              type: z.string(),
+            },
+          ])
+          .parse([]);
+      }).toThrow(
+        "Invalid positional argument name. Supported pattern is /^[A-Za-z0-9_]+[A-Za-z0-9_-]*$/: --arg1"
+      );
+    });
+
+    test("throws runtime exception on duplicated name", () => {
+      expect(() => {
+        parser()
+          .args([
+            { name: "arg1", type: z.string() },
+            { name: "arg1", type: z.string() },
+          ])
+          .parse([]);
+      }).toThrow("Duplicated positional argument name: arg1");
+    });
+
+    test("throws runtime exception when option name and argument name is same", () => {
+      expect(() => {
+        parser()
+          .options({ opt1: { type: z.string() } })
+          .args([{ name: "opt1", type: z.string() }])
+          .parse([]);
+      }).toThrow("Duplicated option name with positional argument name: opt1");
+    });
+  });
+});
+
+describe("subcommand()", () => {
+  // function of subcommand() is tested in subcommand.test.ts
+
+  // zod-opts doesn't support subcommand with global args
+  test("Cannot add subcommand to parser with args().", () => {
+    expect(() => {
+      parser()
+        .args([{ name: "arg1", type: z.string() }])
+        .subcommand(command("cmd1").args([{ name: "arg1", type: z.string() }]));
+    }).toThrow("Cannot add subcommand to parser with args().");
+  });
+
+  // zod-opts doesn't support subcommand with global options
+  test("Cannot add subcommand to parser with args().", () => {
+    expect(() => {
+      parser()
+        .options({ opt1: { type: z.string() } })
+        .subcommand(command("cmd1").args([{ name: "arg1", type: z.string() }]));
+    }).toThrow("Cannot add subcommand to parser with options().");
+  });
+});

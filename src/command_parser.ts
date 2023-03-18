@@ -86,9 +86,6 @@ export class CommandParser {
   }
 
   subcommand(command: Command): CommandParser {
-    if (command.toInternalCommand().name === undefined) {
-      throw new Error("Command name is required");
-    }
     if (
       this._commands.some(
         (c) => c.toInternalCommand().name === command.toInternalCommand().name
@@ -123,10 +120,7 @@ export class CommandParser {
 
     const foundCommand = this._commands.find(
       (command) => command.toInternalCommand().name === commandName
-    );
-    if (foundCommand === undefined) {
-      throw new Error(`Command not found: ${commandName}`);
-    }
+    ) as Command; // CommandParser wll be created by subcommand() that ensures that the command exists
 
     return generateCommandHelp({
       command: foundCommand.toInternalCommand(),
@@ -172,7 +166,7 @@ export class CommandParser {
         zodValidationResult
       );
       if (customValidationResult.type !== "match") {
-        if (this._handler != null) {
+        if (this._handler !== undefined) {
           this._handler(customValidationResult);
         }
         util.errorExit(customValidationResult, this._version);

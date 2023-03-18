@@ -1,6 +1,6 @@
 {
   "name": "zod-opts",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "node.js CLI option parser / validator using Zod",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

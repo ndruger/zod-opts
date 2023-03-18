@@ -50,21 +50,43 @@ export function findOption(
   return undefined;
 }
 
+type ValidateOptionArgResult =
+  | { ok: true; value: "needsValue" | "noValue" }
+  | { ok: false; message: string };
+
 function validateOptionArg(
   option: InternalOption,
   isNegative: boolean,
   value: string | undefined,
   isForcedValue: boolean
-): undefined | "needsValue" | "noValue" {
+): ValidateOptionArgResult {
   if (needsValue(option) && value === undefined) {
-    return undefined;
+    // ex. --foo and foo is string
+    return { ok: false, message: `Option '${option.name}' needs value` };
   }
-  // todo: isForcedValue & !needsValue(option) is error?
+  if (isForcedValue && !needsValue(option)) {
+    // ex. --foo=bar and foo is boolean
+    return {
+      ok: false,
+      message: `Boolean option '${option.name}' does not need value`,
+    };
+  }
   if (isNegative && option.type !== "boolean") {
-    return undefined;
+    // ex. --no-foo=bar and foo is not boolean
+    return {
+      ok: false,
+      message: `Non boolean option '${option.name}' does not accept --no- prefix`,
+    };
   }
 
-  return needsValue(option) ? "needsValue" : "noValue";
+  return {
+    ok: true,
+    value: needsValue(option) ? "needsValue" : "noValue",
+  };
+}
+
+function removePrefix(prefixedName: string): string {
+  return prefixedName.replace(/^-+/, "");
 }
 
 function parseLongNameOptionArg(
@@ -81,17 +103,17 @@ function parseLongNameOptionArg(
   if (forcedValue !== undefined) {
     const result = findOption(options, prefixedName);
     if (result === undefined) {
-      throw new ParseError(`Invalid option: ${prefixedName}`); // todo: remove prefix
+      throw new ParseError(`Invalid option: ${removePrefix(prefixedName)}`);
     }
     const [option, isNegative] = result;
-    const validateRes = validateOptionArg(
+    const validateResult = validateOptionArg(
       option,
       isNegative,
       forcedValue,
       true
     );
-    if (validateRes === undefined) {
-      throw new ParseError(`Invalid option: ${prefixedName}`); // todo: remove prefix
+    if (!validateResult.ok) {
+      throw new ParseError(`${validateResult.message}: ${option.name}`);
     }
     return {
       candidate: {
@@ -104,20 +126,20 @@ function parseLongNameOptionArg(
   } else {
     const result = findOption(options, prefixedName);
     if (result === undefined) {
-      throw new ParseError(`Invalid option: ${prefixedName}`); // todo: remove prefix
+      throw new ParseError(`Invalid option: ${removePrefix(prefixedName)}`);
     }
     const [option, isNegative] = result;
-    const validateRes = validateOptionArg(option, isNegative, next, false);
-    if (validateRes === undefined) {
-      throw new ParseError(`Invalid option: ${prefixedName}`); // todo: remove prefix
+    const validateResult = validateOptionArg(option, isNegative, next, false);
+    if (!validateResult.ok) {
+      throw new ParseError(`${validateResult.message}: ${option.name}`);
     }
     return {
       candidate: {
         name: option.name,
-        value: validateRes === "needsValue" ? next : undefined,
+        value: validateResult.value === "needsValue" ? next : undefined,
         isNegative,
       },
-      shift: validateRes === "needsValue" ? 2 : 1,
+      shift: validateResult.value === "needsValue" ? 2 : 1,
     };
   }
 }
@@ -143,7 +165,7 @@ function parseShortNameMultipleOptionArg(
     const c = text[i];
     const result = findOption(options, `-${c}`);
     if (result === undefined) {
-      throw new ParseError(`Invalid option: -${c}`); // todo: remove prefix
+      throw new ParseError(`Invalid option: ${c}`);
     }
     const [option] = result;
     if (needsValue(option)) {
@@ -202,19 +224,19 @@ function parseShortNameOptionArg(
     return parseShortNameMultipleOptionArg(options, prefixedName, next);
   }
   const [option] = result;
-  const validateRes = validateOptionArg(option, false, next, false);
-  if (validateRes === undefined) {
-    throw new ParseError(`Invalid option: ${prefixedName}`); // todo: remove prefix
+  const validateResult = validateOptionArg(option, false, next, false);
+  if (!validateResult.ok) {
+    throw new ParseError(`${validateResult.message}: ${option.name}`);
   }
   return {
     candidates: [
       {
         name: option.name,
-        value: validateRes === "needsValue" ? next : undefined,
+        value: validateResult.value === "needsValue" ? next : undefined,
         isNegative: false,
       },
     ],
-    shift: validateRes === "needsValue" ? 2 : 1,
+    shift: validateResult.value === "needsValue" ? 2 : 1,
   };
 }
 
@@ -258,7 +280,7 @@ export function parsePositionalArgs(
     const arg = args[i];
     const option = positionalArgs[i];
     if (option === undefined) {
-      throw new ParseError("Too many positional arguments"); // todo: fix error text
+      throw new ParseError("Too many positional arguments");
     }
     if (option.isArray) {
       candidates = candidates.concat({
@@ -364,7 +386,7 @@ function handlePositional(
   positionalArgs: InternalPositionalArg[]
 ): State {
   if (state.positionalCandidates.length !== 0) {
-    throw new ParseError("Multiple positional arguments"); // todo: fix error text
+    throw new ParseError("Positional arguments specified twice");
   }
   const { positionalArgs: picked, shift } = pickPositionalArgs(
     args.slice(state.index),
