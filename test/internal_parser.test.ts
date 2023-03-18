@@ -118,7 +118,7 @@ describe("pickPositionalArgs()", () => {
 
 describe("parse()", () => {
   describe("normal", () => {
-    test("when option and positional option", () => {
+    test("when option and positional argument", () => {
       expect(
         parse({
           args: ["--opt1", "opt_str1"],
@@ -142,7 +142,7 @@ describe("parse()", () => {
       });
     });
 
-    test("multiple positional options", () => {
+    test("multiple positional arguments", () => {
       expect(
         parse({
           args: ["pos1", "pos2"],
@@ -236,7 +236,7 @@ describe("parse()", () => {
       });
     });
 
-    test("when array type positional option", () => {
+    test("when array type positional argument", () => {
       expect(
         parse({
           args: ["pos1", "pos2"],
@@ -481,7 +481,7 @@ describe("parse()", () => {
       }).toThrow("Too many positional arguments");
     });
 
-    test("too many positional arguments when option and positional option exist", () => {
+    test("too many positional arguments when option and positional argument exist", () => {
       expect(() => {
         parse({
           args: ["pos1", "pos2"],

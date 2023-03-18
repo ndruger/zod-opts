@@ -138,7 +138,7 @@ export function validate(
       candidate.value
     );
     if (validated === undefined) {
-      throw new ParseError(`Invalid positional option value: ${name}`);
+      throw new ParseError(`Invalid positional argument value: ${name}`);
     }
     return [candidate.name, validated.value];
   });
@@ -146,7 +146,7 @@ export function validate(
   debugLog("validate", { validOptionValues, validPositionalArgValues });
 
   const duplicatedOptionNames = util.findDuplicatedValues(
-    Object.keys(Object.fromEntries(validOptionValues))
+    validOptionValues.map(([name]) => name)
   );
   if (duplicatedOptionNames.length !== 0) {
     throw new ParseError(
@@ -155,7 +155,7 @@ export function validate(
   }
 
   const duplicatedPositionalArgNames = util.findDuplicatedValues(
-    Object.keys(Object.fromEntries(validPositionalArgValues))
+    validPositionalArgValues.map(([name]) => name)
   );
   if (duplicatedPositionalArgNames.length !== 0) {
     throw new ParseError(

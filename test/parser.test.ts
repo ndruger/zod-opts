@@ -1,9 +1,10 @@
 import { expectTypeOf } from "expect-type";
 import { z } from "zod";
 
+import { command } from "../src/command";
 import { ParseError } from "../src/error";
 import { parser } from "../src/parser";
-import { expectExit0, expectProcessExit } from "./test_util";
+import { expectExit0, expectProcessExit, mockConsole } from "./test_util";
 
 describe("parse()", () => {
   describe("complex", () => {
@@ -72,7 +73,7 @@ describe("parse()", () => {
       expectTypeOf(parsed).toEqualTypeOf<{ opt1: string; opt2: number }>();
     });
 
-    test("returns parsed args when positional options are empty", () => {
+    test("returns parsed args when positional arguments are empty", () => {
       const parsed = parser()
         .options({
           opt1: { type: z.string(), description: "a" },
@@ -399,12 +400,12 @@ describe("parse()", () => {
         });
       });
 
-      test("error on boolean in positional options", () => {
+      test("error on boolean in positional arguments", () => {
         expect(() => {
           parser()
             .args([{ name: "opt", type: z.boolean() }])
             .parse([]);
-        }).toThrow("Unsupported zod type (Positional options): ZodBoolean");
+        }).toThrow("Unsupported zod type (positional argument): ZodBoolean");
       });
 
       test("default with arg", () => {
@@ -709,14 +710,22 @@ describe("parse()", () => {
         );
       });
 
+      test("error on invalid value(number). invalid format", () => {
+        expectProcessExit("Invalid positional argument value: pos", 1, () => {
+          parser()
+            .args([{ name: "pos", type: z.array(z.number().min(10)) }])
+            .parse(["short"]);
+        });
+      });
+
       test("error on invalid value(number)", () => {
         expectProcessExit(
-          "String must contain at least 10 character(s): pos0",
+          "Number must be greater than or equal to 10: pos0",
           1,
           () => {
             parser()
-              .args([{ name: "pos", type: z.array(z.string().min(10)) }])
-              .parse(["short"]);
+              .args([{ name: "pos", type: z.array(z.number().min(10)) }])
+              .parse(["5"]);
           }
         );
       });
@@ -726,7 +735,7 @@ describe("parse()", () => {
           parser()
             .options({ opt: { type: z.array(z.string()) } })
             .parse(["--opt1", "str1"]);
-        }).toThrow("Unsupported zod type (Options): ZodArray");
+        }).toThrow("Unsupported zod type (options): ZodArray");
       });
 
       test("error on array of boolean", () => {
@@ -818,6 +827,16 @@ describe("parse()", () => {
             .parse(["--opt1", "str"]);
         }
       );
+    });
+
+    test("duplicated options", () => {
+      expectProcessExit("Duplicated option: opt1", 1, () => {
+        parser()
+          .options({
+            opt1: { type: z.string() },
+          })
+          .parse(["--opt1", "str", "--opt1", "str"]);
+      });
     });
   });
 
@@ -1048,7 +1067,8 @@ Options:
     });
   });
 
-  describe("handler()", () => {
+  // currently, custom handler is not supported and _internalHandler is internal function.
+  describe("_internalHandler()", () => {
     // help and version test is in describe("help") and describe("version")
     test("match", () => {
       parser()
@@ -1162,6 +1182,15 @@ Options:
   });
 });
 
+describe("showHelp()", () => {
+  test("shows help on console", () => {
+    const mockedConsoleLog = mockConsole("log");
+    parser().name("scriptA").version("1.0.0").description("desc").showHelp();
+    const logText = mockedConsoleLog.mock.calls.flat().join("\n");
+    expect(logText).toContain("Usage: scriptA [options]");
+  });
+});
+
 describe("type test", () => {
   const OptionParams = z.object({
     opt1: z.string(),
@@ -1188,5 +1217,94 @@ describe("type test", () => {
       ])
       .parse(["--opt1", "str1", "--opt2", "10", "a"]);
     expectTypeOf(parsed).toEqualTypeOf<OptionParamsT>();
+  });
+});
+
+describe("options()", () => {
+  describe("runtime error", () => {
+    test("throws runtime exception on invalid option name", () => {
+      expect(() => {
+        parser()
+          .options({
+            "--opt1": { type: z.string() },
+          })
+          .parse([]);
+      }).toThrow(
+        "Invalid option name. Supported pattern is /^[A-Za-z0-9_]+[A-Za-z0-9_-]*$/: --opt1"
+      );
+    });
+
+    test("throws runtime exception on invalid alias name", () => {
+      expect(() => {
+        parser()
+          .options({
+            opt1: { type: z.string(), alias: "-a" },
+          })
+          .parse([]);
+      }).toThrow(
+        "Invalid option alias. Supported pattern is /^[A-Za-z0-9_]+$/: -a"
+      );
+    });
+  });
+});
+
+describe("args()", () => {
+  describe("runtime error", () => {
+    test("throws runtime exception on invalid arg name", () => {
+      expect(() => {
+        parser()
+          .args([
+            {
+              name: "--arg1",
+              type: z.string(),
+            },
+          ])
+          .parse([]);
+      }).toThrow(
+        "Invalid positional argument name. Supported pattern is /^[A-Za-z0-9_]+[A-Za-z0-9_-]*$/: --arg1"
+      );
+    });
+
+    test("throws runtime exception on duplicated name", () => {
+      expect(() => {
+        parser()
+          .args([
+            { name: "arg1", type: z.string() },
+            { name: "arg1", type: z.string() },
+          ])
+          .parse([]);
+      }).toThrow("Duplicated positional argument name: arg1");
+    });
+
+    test("throws runtime exception when option name and argument name is same", () => {
+      expect(() => {
+        parser()
+          .options({ opt1: { type: z.string() } })
+          .args([{ name: "opt1", type: z.string() }])
+          .parse([]);
+      }).toThrow("Duplicated option name with positional argument name: opt1");
+    });
+  });
+});
+
+describe("subcommand()", () => {
+  // function of subcommand() is tested in subcommand.test.ts
+
+  // zod-opts doesn't support subcommand with global args
+  test("Cannot add subcommand to parser with args().", () => {
+    expect(() => {
+      parser()
+        .args([{ name: "arg1", type: z.string() }])
+        .subcommand(command("cmd1").args([{ name: "arg1", type: z.string() }]));
+    }).toThrow("Cannot add subcommand to parser with args().");
+  });
+
+  // zod-opts doesn't support subcommand with global options
+  test("Cannot add subcommand to parser with args().", () => {
+    expect(() => {
+      parser()
+        .options({ opt1: { type: z.string() } })
+        .subcommand(command("cmd1").args([{ name: "arg1", type: z.string() }]));
+    }).toThrow("Cannot add subcommand to parser with options().");
   });
 });

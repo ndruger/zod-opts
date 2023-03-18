@@ -99,7 +99,7 @@ export function toInternalType(
     case ZodFirstPartyTypeKind.ZodBoolean:
       if (isPositional) {
         throw new Error(
-          `Unsupported zod type (Positional options): ${solvedDef.typeName}`
+          `Unsupported zod type (positional argument): ${solvedDef.typeName}`
         );
       }
       return "boolean";
@@ -110,7 +110,7 @@ export function toInternalType(
     case ZodFirstPartyTypeKind.ZodArray:
       if (!isPositional) {
         throw new Error(
-          `Unsupported zod type (Options): ${solvedDef.typeName}`
+          `Unsupported zod type (options): ${solvedDef.typeName}`
         );
       }
       return toInternalTypeForZodArray(solvedDef);

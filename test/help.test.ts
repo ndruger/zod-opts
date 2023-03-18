@@ -52,7 +52,7 @@ describe("generateOptionsText()", () => {
 });
 
 describe("generateGlobalUsage()", () => {
-  test("", () => {
+  test("common", () => {
     const scriptName = "scriptA";
     const positionalArgs: InternalPositionalArg[] = [
       {
@@ -114,7 +114,7 @@ describe("generatePositionalArgsText()", () => {
 });
 
 describe("generateGlobalHelp()", () => {
-  test("", () => {
+  test("common", () => {
     const options: InternalOption[] = [
       createInternalOption({
         type: "boolean",
@@ -205,10 +205,23 @@ Options:
 `;
     expect(result).toBe(expected);
   });
+
+  test("minium arguments", () => {
+    const result = generateGlobalHelp({
+      options: [],
+      positionalArgs: [],
+    });
+    const expected = `Usage: program [options] 
+
+Options:
+  -h, --help  Show help  
+`;
+    expect(result).toBe(expected);
+  });
 });
 
 describe("generateGlobalCommandHelp()", () => {
-  test("", () => {
+  test("common", () => {
     const commands: InternalCommand[] = [
       {
         name: "command1",
@@ -237,6 +250,29 @@ Commands:
 Options:
   -h, --help     Show help     
   -V, --version  Show version  
+`;
+    expect(result).toBe(expected);
+  });
+
+  test("minimum arguments", () => {
+    const commands: InternalCommand[] = [
+      {
+        name: "command1",
+        description: "goog command",
+        options: [],
+        positionalArgs: [],
+      },
+    ];
+    const result = generateGlobalCommandHelp({
+      commands,
+    });
+    const expected = `Usage: script [options] <command>
+
+Commands:
+  command1  goog command
+
+Options:
+  -h, --help  Show help  
 `;
     expect(result).toBe(expected);
   });

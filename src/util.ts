@@ -58,7 +58,7 @@ function validateParamOption(name: string, { alias }: Option): void {
 function validateParamPositionalArg({ name }: PositionalArg): void {
   if (!IdSchema.safeParse(name).success) {
     throw new Error(
-      `Invalid positional option name. Supported pattern is /${IdRegexStr}/: ${name}`
+      `Invalid positional argument name. Supported pattern is /${IdRegexStr}/: ${name}`
     );
   }
 }
@@ -78,7 +78,7 @@ function checkIfPositionalOptionNamesDuplicated(
   );
   if (duplicatedName.length !== 0) {
     throw new Error(
-      `Duplicated positional option name: ${duplicatedName.join(", ")}`
+      `Duplicated positional argument name: ${duplicatedName.join(", ")}`
     );
   }
 }
@@ -89,7 +89,7 @@ function checkIfOptNameUsedWithPositionalOption(
   Object.keys(options).forEach((optionName) => {
     if (positionalArgs.some((option) => option.name === optionName)) {
       throw new Error(
-        `Duplicated option name with positional option name: ${optionName}`
+        `Duplicated option name with positional argument name: ${optionName}`
       );
     }
   });

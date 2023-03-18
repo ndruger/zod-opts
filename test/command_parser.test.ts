@@ -4,7 +4,7 @@ import { z } from "zod";
 import { type Command, command } from "../src/command";
 import { ParseError } from "../src/error";
 import { parser } from "../src/parser";
-import { expectExit0, expectProcessExit } from "./test_util";
+import { expectExit0, expectProcessExit, mockConsole } from "./test_util";
 
 function createActionUnexpectedCommand(name: string): Command {
   return command(name)
@@ -419,7 +419,7 @@ Options:
 });
 
 describe("subcommand()", () => {
-  test("throw runtime error on command without action", () => {
+  test("throws runtime error on command without action", () => {
     expect(() => {
       parser()
         .name("scriptNameA")
@@ -440,6 +440,34 @@ describe("subcommand()", () => {
         )
         .parse(["command1", "--opt1", "str1", "pos1"]);
     }).toThrowError("action is required for command");
+  });
+
+  test("throws runtime error on duplicated command name", () => {
+    expect(() => {
+      parser()
+        .name("scriptNameA")
+        .subcommand(
+          command("command1")
+            .options({
+              opt1: {
+                type: z.string(),
+                description: "a",
+              },
+            })
+            .action(() => {})
+        )
+        .subcommand(
+          command("command1")
+            .options({
+              opt1: {
+                type: z.string(),
+                description: "a",
+              },
+            })
+            .action(() => {})
+        )
+        .parse(["command1", "--opt1", "str1", "pos1"]);
+    }).toThrowError("Duplicated command name: command1");
   });
 });
 
@@ -503,5 +531,32 @@ Options:
       .subcommand(testCommand)
       .getHelp("command1");
     expect(help).toEqual(expectedHelp);
+  });
+});
+
+describe("showHelp()", () => {
+  const testCommand = command("command1")
+    .description("desc2")
+    .options({
+      opt1: {
+        type: z.string(),
+        description: "a",
+      },
+    })
+    .args([
+      {
+        name: "pos1",
+        type: z.string(),
+      },
+    ])
+    .action((parsed) => {
+      expect(1).toBe(0);
+    });
+
+  test("global help", () => {
+    const mockedConsoleLog = mockConsole("log");
+    parser().name("scriptA").subcommand(testCommand).showHelp();
+    const logText = mockedConsoleLog.mock.calls.flat().join("\n");
+    expect(logText).toContain("Usage: scriptA [options] <command>");
   });
 });
