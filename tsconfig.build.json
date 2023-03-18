@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "target": "ES2019",
-    "incremental": false
+    "incremental": false,
+    "sourceMap": false
   },
   "include": ["src"]
 }

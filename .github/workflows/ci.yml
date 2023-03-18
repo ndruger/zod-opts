@@ -1,0 +1,25 @@
+name: CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: [16, 18]
+        os: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v3
+        with:
+          cache: "npm"
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - run: npm rum build
+      - run: npm test
+      - run: npm run lint

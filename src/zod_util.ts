@@ -63,7 +63,6 @@ function isRequired(def: ZodDef): boolean {
 
   if (def.typeName === ZodFirstPartyTypeKind.ZodUnion) {
     return !def.options.some((option) => {
-      console.log("required", isRequired(option._def));
       return !isRequired(option._def);
     });
   }
