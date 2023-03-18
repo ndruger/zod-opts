@@ -1,6 +1,7 @@
 # ZodOpts
 
 [![NPM Version](http://img.shields.io/npm/v/zod-opts.svg?style=flat)](https://www.npmjs.org/package/zod-opts)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 [![CI](https://github.com/ndruger/zod-opts/actions/workflows/ci.yml/badge.svg)](https://github.com/ndruger/zod-opts/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/ndruger/zod-opts/branch/master/graph/badge.svg?token=TX7GCMBT8U)](https://codecov.io/gh/ndruger/zod-opts)
 
