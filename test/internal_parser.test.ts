@@ -236,32 +236,6 @@ describe("parse()", () => {
       });
     });
 
-    test("parser don't check boolean value", () => {
-      expect(
-        parse({
-          args: ["--flag1=flag1", "pos1"],
-          options: [createInternalOption({ name: "flag1", type: "boolean" })],
-          positionalArgs: [createInternalPositionalArg({})],
-        })
-      ).toEqual({
-        candidates: [
-          {
-            name: "flag1",
-            value: "flag1",
-            isNegative: false,
-          },
-        ],
-        positionalCandidates: [
-          {
-            name: "pos1",
-            value: "pos1",
-          },
-        ],
-        isHelp: false,
-        isVersion: false,
-      });
-    });
-
     test("when array type positional option", () => {
       expect(
         parse({
@@ -464,14 +438,14 @@ describe("parse()", () => {
   });
 
   describe("exception", () => {
-    test("missing option arg", () => {
+    test("Option 'opt1' needs value: opt1", () => {
       expect(() => {
         parse({
           args: ["--opt1"],
           options: [createInternalOption({ name: "opt1" })],
           positionalArgs: [],
         });
-      }).toThrow("Invalid option");
+      }).toThrow("Option 'opt1' needs value: opt1");
     });
 
     test("missing option name", () => {
@@ -494,7 +468,7 @@ describe("parse()", () => {
           ],
           positionalArgs: [],
         });
-      }).toThrow("Invalid option");
+      }).toThrow("Option 'opt1' needs value: opt1");
     });
 
     test("too many positional arguments when option exists", () => {
@@ -524,7 +498,7 @@ describe("parse()", () => {
           options: [createInternalOption({ name: "opt1" })],
           positionalArgs: [createInternalPositionalArg({ name: "pos1" })],
         });
-      }).toThrow("Multiple positional arguments");
+      }).toThrow("Positional arguments specified twice");
     });
 
     describe("unified option", () => {
@@ -546,7 +520,7 @@ describe("parse()", () => {
             ],
             positionalArgs: [],
           });
-        }).toThrow("Invalid option: -a");
+        }).toThrow("Invalid option: a");
       });
       test("-abc1 => -abc=1", () => {
         expect(() => {
@@ -561,7 +535,7 @@ describe("parse()", () => {
             ],
             positionalArgs: [],
           });
-        }).toThrow("Invalid option: -a");
+        }).toThrow("Invalid option: a");
       });
       test("-= is invalid", () => {
         expect(() => {
@@ -579,7 +553,7 @@ describe("parse()", () => {
             options: [],
             positionalArgs: [],
           });
-        }).toThrow("Invalid option: --");
+        }).toThrow("Invalid option: ");
       });
     });
   });

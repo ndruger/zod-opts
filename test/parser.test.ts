@@ -257,7 +257,7 @@ describe("parse()", () => {
       });
 
       test("error on required arg", () => {
-        expectProcessExit("Invalid option: --opt1", 1, () =>
+        expectProcessExit("Option 'opt1' needs value: opt1", 1, () =>
           parser()
             .options({ opt1: { type: z.string() } })
             .parse(["--opt1"])
@@ -347,7 +347,7 @@ describe("parse()", () => {
       });
 
       test("error on required arg", () => {
-        expectProcessExit("Invalid option: --opt1", 1, () =>
+        expectProcessExit("Option 'opt1' needs value: opt1", 1, () =>
           parser()
             .options({ opt1: { type: z.number() } })
             .parse(["--opt1"])
@@ -397,18 +397,6 @@ describe("parse()", () => {
             .options({ opt: { type: z.boolean() } })
             .parse(["--opt", "str1"]);
         });
-      });
-
-      test("error wrong format", () => {
-        expectProcessExit(
-          "Invalid option value. boolean is expected: opt",
-          1,
-          () => {
-            parser()
-              .options({ opt: { type: z.boolean() } })
-              .parse(["--opt=str1"]);
-          }
-        );
       });
 
       test("error on boolean in positional options", () => {
@@ -477,6 +465,38 @@ describe("parse()", () => {
         expectTypeOf(parsed).toEqualTypeOf<{
           opt?: boolean;
         }>();
+      });
+
+      test("error when --opt=str", () => {
+        expectProcessExit(
+          "Boolean option 'opt' does not need value: opt",
+          1,
+          () => {
+            parser()
+              .options({ opt: { type: z.boolean() } })
+              .parse(["--opt=str"]);
+          }
+        );
+      });
+
+      test("don't support --opt=true or --opt=false format", () => {
+        expectProcessExit(
+          "Boolean option 'opt' does not need value: opt",
+          1,
+          () => {
+            parser()
+              .options({ opt: { type: z.boolean() } })
+              .parse(["--opt=true"]);
+          }
+        );
+      });
+
+      test("error when -a10", () => {
+        expectProcessExit("Invalid option: 1", 1, () => {
+          parser()
+            .options({ opt: { type: z.boolean(), alias: "a" } })
+            .parse(["-a10"]);
+        });
       });
     });
 
@@ -574,7 +594,7 @@ describe("parse()", () => {
       });
 
       test("error on invalid string value", () => {
-        expectProcessExit("Invalid option: --opt", 1, () => {
+        expectProcessExit("Invalid option: opt", 1, () => {
           parser()
             .options({
               opt1: {
@@ -586,7 +606,7 @@ describe("parse()", () => {
       });
 
       test("error on invalid number value", () => {
-        expectProcessExit("Invalid option: --opt", 1, () => {
+        expectProcessExit("Invalid option: opt", 1, () => {
           parser()
             .options({
               opt1: {
@@ -765,7 +785,7 @@ describe("parse()", () => {
 
   describe("format error", () => {
     test("no option value", () => {
-      expectProcessExit("Invalid option: -n", 1, () => {
+      expectProcessExit("Option 'opt1' needs value: opt1", 1, () => {
         parser()
           .options({
             opt1: { type: z.string(), description: "a", alias: "n" },
@@ -775,7 +795,7 @@ describe("parse()", () => {
     });
 
     test("invalid option", () => {
-      expectProcessExit("Invalid option: --opt1", 1, () => {
+      expectProcessExit("Invalid option: opt1", 1, () => {
         parser().parse(["--opt1", "opt1"]);
       });
     });

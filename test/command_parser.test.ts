@@ -317,7 +317,7 @@ Options:
   });
 
   test("error on parse()", () => {
-    expectProcessExit("Invalid option: --opt-missing", 1, () => {
+    expectProcessExit("Invalid option: opt-missing", 1, () => {
       parser()
         .name("scriptNameA")
         .subcommand(
@@ -336,7 +336,7 @@ Options:
           expect(result).toEqual({
             commandName: "command1",
             type: "error",
-            error: new ParseError("Invalid option: --opt-missing"),
+            error: new ParseError("Invalid option: opt-missing"),
             help: expect.stringContaining(
               "Usage: scriptNameA command1 [options]"
             ),
