@@ -22,7 +22,7 @@ jobs:
       - run: npm ci
       - run: npm rum build
       - run: npm run lint
-      - run: npm test_cov
+      - run: npm run test_cov
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
