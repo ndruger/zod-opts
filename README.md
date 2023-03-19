@@ -23,6 +23,8 @@ A library that simplifies the process of parsing and validating command-line arg
   - [Commands](#commands)
   - [Help](#help)
   - [Version](#version)
+  - [Advanced Usage](#advanced-usage)
+    - [Reuse Zod object type](#reuse-zod-object-type)
 
 <!-- /TOC -->
 
@@ -416,4 +418,46 @@ If the parser has called with `.version()` method, The user can show the version
 ```bash
 $ node complex.js --version
 1.0.0
+```
+
+## Advanced Usage
+
+### Reuse Zod object type
+
+If you want to reuse Zod object type, you can define the type and use it in `.options()` and `.args()`.
+
+File: [map_zod_object.ts](./example/map_zod_object.ts)
+
+```ts
+import { z } from "zod";
+import { parser } from "zod-opts";
+
+const OptionsSchema = z.object({
+  opt1: z.string(),
+  opt2: z.number().optional(),
+  pos1: z.enum(["a", "b"]),
+});
+
+type Options = z.infer<typeof Options>;
+
+function parseOptions(): Options {
+  return parser()
+    .name("scriptA")
+    .version("1.0.0")
+    .description("desc")
+    .options({
+      opt1: { type: OptionsSchema.shape.opt1 },
+      opt2: { type: OptionsSchema.shape.opt2 },
+    })
+    .args([
+      {
+        name: "pos1",
+        type: OptionsSchema.shape.pos1,
+      },
+    ])
+    .parse();
+}
+
+const options = parseOptions();
+console.log(options);
 ```
