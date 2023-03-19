@@ -16,6 +16,7 @@ A library that simplifies the process of parsing and validating command-line arg
   - [Options](#options)
     - [Various option types](#various-option-types)
       - [boolean types](#boolean-types)
+        - [negatable boolean](#negatable-boolean)
       - [enum types](#enum-types)
       - [array types](#array-types)
     - [Custom validation](#custom-validation)
@@ -25,6 +26,7 @@ A library that simplifies the process of parsing and validating command-line arg
   - [Version](#version)
   - [Advanced Usage](#advanced-usage)
     - [Reuse Zod object type](#reuse-zod-object-type)
+  - [Future work ideas](#future-work-ideas)
 
 <!-- /TOC -->
 
@@ -202,6 +204,26 @@ const parsed = parser()
 //     option3?: boolean;
 //     option4?: boolean;
 // }
+```
+
+##### negatable boolean
+
+You can use '--no-' prefix to set false(ex. `--no-option1`).
+
+```ts
+const parsed = parser()
+  .options({
+    option1: {
+      type: z.boolean().default(true),
+    },
+  })
+  .parse();
+console.log(parsed);
+```
+
+```bash
+$ node script.js --no-option1
+{ option1: false }
 ```
 
 #### enum types
@@ -461,3 +483,10 @@ function parseOptions(): Options {
 const options = parseOptions();
 console.log(options);
 ```
+
+## Future work ideas
+
+- [ ] Support nested commands.
+- [ ] Support `z.array()` type in `options()`.
+- [ ] Support custom callback to handle errors, help and exit().
+- [ ] `asyncParse()`
