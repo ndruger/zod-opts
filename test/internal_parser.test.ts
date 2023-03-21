@@ -1,59 +1,65 @@
 import {
-  findOption,
-  isNumeric,
+  findOptionByPrefixedName,
+  isNumericValue,
   likesOptionArg,
   parse,
-  parseMultiCommand,
+  parseMultipleCommand,
   pickPositionalArgs,
 } from "../src/internal_parser";
 import { createInternalOption, createInternalPositionalArg } from "./test_util";
 
-describe("isNumeric()", () => {
+describe("isNumericValue()", () => {
   test("common", () => {
-    expect(isNumeric("0")).toEqual(true);
-    expect(isNumeric("-0.10")).toEqual(true);
-    expect(isNumeric("0x10")).toEqual(true);
-    expect(isNumeric("111111")).toEqual(true);
-    expect(isNumeric(" 1 ")).toEqual(true);
-    expect(isNumeric("1 ")).toEqual(true);
-    expect(isNumeric(" 1")).toEqual(true);
+    expect(isNumericValue("0")).toEqual(true);
+    expect(isNumericValue("-0.10")).toEqual(true);
+    expect(isNumericValue("0x10")).toEqual(true);
+    expect(isNumericValue("111111")).toEqual(true);
+    expect(isNumericValue(" 1 ")).toEqual(true);
+    expect(isNumericValue("1 ")).toEqual(true);
+    expect(isNumericValue(" 1")).toEqual(true);
 
-    expect(isNumeric("a10")).toEqual(false);
-    expect(isNumeric("10a")).toEqual(false);
-    expect(isNumeric("")).toEqual(false);
-    expect(isNumeric("a")).toEqual(false);
-    expect(isNumeric(" ")).toEqual(false);
-    expect(isNumeric("1.1.1")).toEqual(false);
+    expect(isNumericValue("a10")).toEqual(false);
+    expect(isNumericValue("10a")).toEqual(false);
+    expect(isNumericValue("")).toEqual(false);
+    expect(isNumericValue("a")).toEqual(false);
+    expect(isNumericValue(" ")).toEqual(false);
+    expect(isNumericValue("1.1.1")).toEqual(false);
   });
 });
 
-describe("findOption()", () => {
+describe("findOptionByPrefixedName()", () => {
   test("common", () => {
-    expect(findOption([], "--opt")).toEqual(undefined);
+    expect(findOptionByPrefixedName([], "--opt")).toEqual(undefined);
     expect(
-      findOption([createInternalOption({ name: "opt1" })], "--opt2")
+      findOptionByPrefixedName(
+        [createInternalOption({ name: "opt1" })],
+        "--opt2"
+      )
     ).toEqual(undefined);
     expect(
-      findOption([createInternalOption({ name: "opt1" })], "--opt1")
+      findOptionByPrefixedName(
+        [createInternalOption({ name: "opt1" })],
+        "--opt1"
+      )
     ).toEqual([createInternalOption({ name: "opt1" }), false]);
 
     // In parse phase, don't mind about the value
     expect(
-      findOption(
+      findOptionByPrefixedName(
         [createInternalOption({ name: "opt1", type: "number" })],
         "--opt1"
       )
     ).toEqual([createInternalOption({ name: "opt1", type: "number" }), false]);
 
     expect(
-      findOption(
+      findOptionByPrefixedName(
         [createInternalOption({ name: "opt1", type: "boolean" })],
         "--opt1"
       )
     ).toEqual([createInternalOption({ name: "opt1", type: "boolean" }), false]);
 
     expect(
-      findOption(
+      findOptionByPrefixedName(
         [createInternalOption({ name: "opt1", type: "boolean" })],
         "--no-opt1"
       )
@@ -61,14 +67,14 @@ describe("findOption()", () => {
 
     // don't check required
     expect(
-      findOption(
+      findOptionByPrefixedName(
         [createInternalOption({ name: "opt1", type: "string" })],
         "--no-opt1"
       )
     ).toEqual([createInternalOption({ name: "opt1", type: "string" }), true]);
 
     expect(
-      findOption(
+      findOptionByPrefixedName(
         [createInternalOption({ name: "opt1", type: "boolean" })],
         "--no-opt2"
       )
@@ -559,10 +565,10 @@ describe("parse()", () => {
   });
 });
 
-describe("parseMultiCommand", () => {
+describe("parseMultipleCommand", () => {
   test("parse", () => {
     expect(
-      parseMultiCommand({
+      parseMultipleCommand({
         args: ["cmd1", "--opt1", "opt_str1"],
         commands: [
           {
@@ -592,7 +598,7 @@ describe("parseMultiCommand", () => {
 
   test("global help", () => {
     expect(
-      parseMultiCommand({
+      parseMultipleCommand({
         args: ["--help"],
         commands: [
           {
@@ -615,7 +621,7 @@ describe("parseMultiCommand", () => {
 
   test("command help when '--help' before command name", () => {
     expect(
-      parseMultiCommand({
+      parseMultipleCommand({
         args: ["--help", "cmd1"],
         commands: [
           {
@@ -639,7 +645,7 @@ describe("parseMultiCommand", () => {
 
   test("command help when '--help' after command name", () => {
     expect(
-      parseMultiCommand({
+      parseMultipleCommand({
         args: ["cmd1", "--help"],
         commands: [
           {
@@ -663,7 +669,7 @@ describe("parseMultiCommand", () => {
 
   test("version", () => {
     expect(
-      parseMultiCommand({
+      parseMultipleCommand({
         args: ["--version"],
         commands: [
           {

@@ -14,7 +14,7 @@ export function uniq<T>(array: T[]): T[] {
   return [...new Set(array)];
 }
 
-export function findDuplicatedValues(array: string[]): string[] {
+export function findDuplicateValues(array: string[]): string[] {
   return array.filter((e, i, a) => a.indexOf(e) !== i);
 }
 
@@ -63,22 +63,22 @@ function validateParamPositionalArg({ name }: PositionalArg): void {
   }
 }
 
-function checkIfOptionNamesDuplicated(options: Options | undefined): void {
-  const duplicatedName = findDuplicatedValues(Object.keys(options ?? {}));
-  if (duplicatedName.length !== 0) {
-    throw new Error(`Duplicated option name: ${duplicatedName.join(", ")}`);
+function checkForDuplicateOptionNames(options: Options | undefined): void {
+  const duplicateName = findDuplicateValues(Object.keys(options ?? {}));
+  if (duplicateName.length !== 0) {
+    throw new Error(`Duplicated option name: ${duplicateName.join(", ")}`);
   }
 }
 
-function checkIfPositionalOptionNamesDuplicated(
+function checkForDuplicatePositionalOptionNames(
   positionalArgs: PositionalArgs
 ): void {
-  const duplicatedName = findDuplicatedValues(
+  const duplicateName = findDuplicateValues(
     positionalArgs.map((option) => option.name)
   );
-  if (duplicatedName.length !== 0) {
+  if (duplicateName.length !== 0) {
     throw new Error(
-      `Duplicated positional argument name: ${duplicatedName.join(", ")}`
+      `Duplicated positional argument name: ${duplicateName.join(", ")}`
     );
   }
 }
@@ -102,10 +102,10 @@ export function validateParamOptionsAndPositionalArgs(
   Object.entries(options).forEach(([optionName, option]) => {
     validateParamOption(optionName, option);
   });
-  checkIfOptionNamesDuplicated(options);
+  checkForDuplicateOptionNames(options);
 
   positionalArgs.forEach(validateParamPositionalArg);
-  checkIfPositionalOptionNamesDuplicated(positionalArgs);
+  checkForDuplicatePositionalOptionNames(positionalArgs);
   checkIfOptNameUsedWithPositionalOption(options, positionalArgs);
 }
 

@@ -8,7 +8,7 @@ const OptionsSchema = z.object({
   pos1: z.enum(["a", "b"]),
 });
 
-type Options = z.infer<typeof Options>;
+type Options = z.infer<typeof OptionsSchema>;
 
 function parseOptions(): Options {
   return parser()

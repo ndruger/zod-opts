@@ -5,7 +5,7 @@ import { z, type ZodObject, type ZodRawShape } from "zod";
 import { type Command } from "./command";
 import { ParseError } from "./error";
 import { generateCommandHelp, generateGlobalCommandHelp } from "./help";
-import { type CommandParsed, parseMultiCommand } from "./internal_parser";
+import { type CommandParsed, parseMultipleCommand } from "./internal_parser";
 import { debugLog } from "./logger";
 import type {
   Handler,
@@ -17,7 +17,7 @@ import type {
   ValidateCallback,
 } from "./type";
 import * as util from "./util";
-import { validateMultiCommand } from "./validator";
+import { validateMultipleCommands } from "./validator";
 
 interface ParseInput {
   args: string[];
@@ -239,9 +239,10 @@ export class CommandParser {
     scriptName: string | undefined
   ): ParseResultError {
     const error = e;
-    const selectedCommand = commands.find(
-      (command) => command.name === (error.commandName as string)
-    );
+    const selectedCommand =
+      error.commandName !== undefined
+        ? commands.find((command) => command.name === error.commandName)
+        : undefined;
     return {
       type: "error",
       error: e,
@@ -258,13 +259,13 @@ export class CommandParser {
     scriptName: string
   ): ParseResultMatch<object> {
     const { options: validOptions, positionalArgs: validPositionalArgs } =
-      validateMultiCommand(
+      validateMultipleCommands(
         parsed,
         selectedCommand.options,
         selectedCommand.positionalArgs,
         parsed.commandName as string
       );
-    debugLog("generateInternalParserAndParse", {
+    debugLog("createInternalParserAndParse", {
       validOptions: JSON.stringify(validOptions),
       validPositionalArgs: JSON.stringify(validPositionalArgs),
     });
@@ -296,11 +297,11 @@ export class CommandParser {
     | ParseResultVersion
     | ParseResultMatch<object> {
     try {
-      const parsed = parseMultiCommand({
+      const parsed = parseMultipleCommand({
         args,
         commands,
       });
-      debugLog("parseMultiCommand", {
+      debugLog("parseMultipleCommand", {
         parsed: JSON.stringify(parsed),
       });
       const selectedCommand = commands.find(
@@ -321,7 +322,7 @@ export class CommandParser {
         scriptName
       );
     } catch (e) {
-      debugLog("generateInternalParserAndParse handle error", e);
+      debugLog("createInternalParserAndParse handle error", e);
       if (!(e instanceof ParseError)) {
         throw e;
       }

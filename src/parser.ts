@@ -169,7 +169,7 @@ export class Parser<
       positionalArgs
     ) as GenerateZodShape<TOptions, TPositionalArgs>;
 
-    const handlerArg = helper.generateInternalParserAndParse({
+    const handlerArg = helper.createInternalParserAndParse({
       options,
       positionalArgs,
       args: validArgs,

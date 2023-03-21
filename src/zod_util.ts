@@ -70,7 +70,7 @@ function isRequired(def: ZodDef): boolean {
   return true;
 }
 
-function solveInnerType(def: ZodDef): ZodDef {
+function resolveInnerType(def: ZodDef): ZodDef {
   if (
     [
       ZodFirstPartyTypeKind.ZodOptional,
@@ -78,10 +78,10 @@ function solveInnerType(def: ZodDef): ZodDef {
     ].includes(def.typeName)
   ) {
     const innerDef = "innerType" in def ? def.innerType._def : def;
-    return solveInnerType(innerDef);
+    return resolveInnerType(innerDef);
   }
   if (def.typeName === "ZodEffects") {
-    return solveInnerType(def.schema._def);
+    return resolveInnerType(def.schema._def);
   }
   return def;
 }
@@ -90,7 +90,7 @@ export function toInternalType(
   def: ZodDef,
   isPositional: boolean = false
 ): BaseType {
-  const solvedDef: ZodDef = solveInnerType(def);
+  const solvedDef: ZodDef = resolveInnerType(def);
   switch (solvedDef.typeName) {
     case ZodFirstPartyTypeKind.ZodNumber:
       return "number";
@@ -132,20 +132,19 @@ export function toInternalTypeForZodUnion(def: ZodUnionDef): BaseType {
 }
 
 function toInternalTypeForZodArray(def: ZodArrayDef): BaseType {
-  switch (def.type._def.typeName) {
+  const typeName = def.type._def.typeName;
+  switch (typeName) {
     case ZodFirstPartyTypeKind.ZodString:
       return "string";
     case ZodFirstPartyTypeKind.ZodNumber:
       return "number";
     default:
-      throw new Error(
-        `Unsupported zod type: Array of ${def.type._def.typeName as string}`
-      );
+      throw new Error(`Unsupported zod type: Array of ${typeName as string}`);
   }
 }
 
 function getEnumValues(def: ZodDef): string[] | undefined {
-  const solvedDef: ZodDef = solveInnerType(def);
+  const solvedDef: ZodDef = resolveInnerType(def);
   if (solvedDef.typeName !== ZodFirstPartyTypeKind.ZodEnum) {
     return undefined;
   }
@@ -153,6 +152,7 @@ function getEnumValues(def: ZodDef): string[] | undefined {
 }
 
 export function optionToInternal(option: Option, name: string): InternalOption {
+  // sequence of this is important. It changes exception.
   const zodType = option.type;
   const def: ZodDef = zodType._def;
   const defaultValue = getDefaultValue(def) as string | number | undefined;
@@ -177,6 +177,7 @@ export function optionToInternal(option: Option, name: string): InternalOption {
 export function positionalArgToInternal(
   option: PositionalArg
 ): InternalPositionalArg {
+  // sequence of this is important. It changes exception.
   const zodType = option.type;
   const def: ZodDef = zodType._def;
   const defaultValue = getDefaultValue(def) as
