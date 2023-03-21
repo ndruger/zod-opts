@@ -152,43 +152,53 @@ function getEnumValues(def: ZodDef): string[] | undefined {
 }
 
 export function optionToInternal(option: Option, name: string): InternalOption {
+  // sequence of this is important. It changes exception.
   const zodType = option.type;
   const def: ZodDef = zodType._def;
+  const defaultValue = getDefaultValue(def) as string | number | undefined;
+  const internalType = toInternalType(def);
+  const description =
+    option.description ??
+    ("description" in zodType ? zodType.description : undefined);
+  const enumValues = getEnumValues(def);
 
   return {
-    type: toInternalType(def),
+    type: internalType,
     name,
     alias: option.alias,
     argName: option.argName,
-    description:
-      option.description ??
-      ("description" in zodType ? zodType.description : undefined),
+    description,
     required: isRequired(def),
-    defaultValue: getDefaultValue(def) as string | number | undefined,
-    enumValues: getEnumValues(def),
+    defaultValue,
+    enumValues,
   };
 }
 
 export function positionalArgToInternal(
   option: PositionalArg
 ): InternalPositionalArg {
+  // sequence of this is important. It changes exception.
   const zodType = option.type;
   const def: ZodDef = zodType._def;
+  const defaultValue = getDefaultValue(def) as
+    | string[]
+    | number[]
+    | string
+    | number
+    | undefined;
+  const internalType = toInternalType(def, true) as "string" | "number";
+  const description =
+    option.description ??
+    ("description" in zodType ? zodType.description : undefined);
+  const enumValues = getEnumValues(def);
 
   return {
-    type: toInternalType(def, true) as "string" | "number",
+    type: internalType,
     name: option.name,
-    description:
-      option.description ??
-      ("description" in zodType ? zodType.description : undefined),
+    description,
     required: isRequired(def),
     isArray: def.typeName === "ZodArray",
-    defaultValue: getDefaultValue(def) as
-      | string[]
-      | number[]
-      | string
-      | number
-      | undefined,
-    enumValues: getEnumValues(def),
+    defaultValue,
+    enumValues,
   };
 }
