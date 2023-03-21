@@ -239,9 +239,10 @@ export class CommandParser {
     scriptName: string | undefined
   ): ParseResultError {
     const error = e;
-    const selectedCommand = commands.find(
-      (command) => command.name === (error.commandName as string)
-    );
+    const selectedCommand =
+      error.commandName !== undefined
+        ? commands.find((command) => command.name === error.commandName)
+        : undefined;
     return {
       type: "error",
       error: e,

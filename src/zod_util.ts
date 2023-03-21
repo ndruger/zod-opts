@@ -132,15 +132,14 @@ export function toInternalTypeForZodUnion(def: ZodUnionDef): BaseType {
 }
 
 function toInternalTypeForZodArray(def: ZodArrayDef): BaseType {
-  switch (def.type._def.typeName) {
+  const typeName = def.type._def.typeName;
+  switch (typeName) {
     case ZodFirstPartyTypeKind.ZodString:
       return "string";
     case ZodFirstPartyTypeKind.ZodNumber:
       return "number";
     default:
-      throw new Error(
-        `Unsupported zod type: Array of ${def.type._def.typeName as string}`
-      );
+      throw new Error(`Unsupported zod type: Array of ${typeName as string}`);
   }
 }
 
@@ -155,22 +154,18 @@ function getEnumValues(def: ZodDef): string[] | undefined {
 export function optionToInternal(option: Option, name: string): InternalOption {
   const zodType = option.type;
   const def: ZodDef = zodType._def;
-  const defaultValue = getDefaultValue(def) as string | number | undefined;
-  const internalType = toInternalType(def);
-  const description =
-    option.description ??
-    ("description" in zodType ? zodType.description : undefined);
-  const enumValues = getEnumValues(def);
 
   return {
-    type: internalType,
+    type: toInternalType(def),
     name,
     alias: option.alias,
     argName: option.argName,
-    description,
+    description:
+      option.description ??
+      ("description" in zodType ? zodType.description : undefined),
     required: isRequired(def),
-    defaultValue,
-    enumValues,
+    defaultValue: getDefaultValue(def) as string | number | undefined,
+    enumValues: getEnumValues(def),
   };
 }
 
@@ -179,25 +174,21 @@ export function positionalArgToInternal(
 ): InternalPositionalArg {
   const zodType = option.type;
   const def: ZodDef = zodType._def;
-  const defaultValue = getDefaultValue(def) as
-    | string[]
-    | number[]
-    | string
-    | number
-    | undefined;
-  const internalType = toInternalType(def, true) as "string" | "number";
-  const description =
-    option.description ??
-    ("description" in zodType ? zodType.description : undefined);
-  const enumValues = getEnumValues(def);
 
   return {
-    type: internalType,
+    type: toInternalType(def, true) as "string" | "number",
     name: option.name,
-    description,
+    description:
+      option.description ??
+      ("description" in zodType ? zodType.description : undefined),
     required: isRequired(def),
     isArray: def.typeName === "ZodArray",
-    defaultValue,
-    enumValues,
+    defaultValue: getDefaultValue(def) as
+      | string[]
+      | number[]
+      | string
+      | number
+      | undefined,
+    enumValues: getEnumValues(def),
   };
 }
