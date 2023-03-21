@@ -111,7 +111,7 @@ export class Command<
   }
 
   toInternalCommand(): InternalCommand {
-    this._validateMultiCommand();
+    this._validateMultipleCommands();
     return {
       name: this._name as string,
       description: this._description,
@@ -134,7 +134,7 @@ export class Command<
     };
   }
 
-  private _validateMultiCommand(): void {
+  private _validateMultipleCommands(): void {
     if (this._action === undefined) {
       throw new Error("action is required for command");
     }
@@ -146,7 +146,7 @@ export class Command<
     action: ActionCallback<ZodRawShape>;
     validation?: ValidateCallback<ZodRawShape>;
   } {
-    this._validateMultiCommand();
+    this._validateMultipleCommands();
 
     const shape = helper.generateZodShape(this._options, this._positionalArgs);
 

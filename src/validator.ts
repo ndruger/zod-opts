@@ -1,6 +1,6 @@
 import { ParseError } from "./error";
 import type { Parsed } from "./internal_parser";
-import { isNumeric } from "./internal_parser";
+import { isNumericValue } from "./internal_parser";
 import { debugLog } from "./logger";
 import type {
   FormatValidOption,
@@ -32,7 +32,7 @@ export function validateCandidateValue(
       return { value };
     case "number":
       // !isNegative is always true
-      if (value === undefined || !isNumeric(value)) {
+      if (value === undefined || !isNumericValue(value)) {
         return undefined;
       }
       return { value: parseFloat(value) };
@@ -58,7 +58,7 @@ export function validatePositionalCandidateValue(
       case "string":
         return { value };
       case "number":
-        if (value.some((v) => !isNumeric(v))) {
+        if (value.some((v) => !isNumericValue(v))) {
           return undefined;
         }
         return {
@@ -74,14 +74,14 @@ export function validatePositionalCandidateValue(
       }
       return { value };
     case "number":
-      if (value === undefined || !isNumeric(value as string)) {
+      if (value === undefined || !isNumericValue(value as string)) {
         return undefined;
       }
       return { value: parseFloat(value as string) };
   }
 }
 
-export function validateMultiCommand(
+export function validateMultipleCommands(
   parsed: Parsed,
   options: InternalOption[],
   positionalArgs: InternalPositionalArg[],
@@ -145,16 +145,16 @@ export function validate(
 
   debugLog("validate", { validOptionValues, validPositionalArgValues });
 
-  const duplicatedOptionNames = util.findDuplicatedValues(
+  const duplicateOptionNames = util.findDuplicateValues(
     validOptionValues.map(([name]) => name)
   );
-  if (duplicatedOptionNames.length !== 0) {
+  if (duplicateOptionNames.length !== 0) {
     throw new ParseError(
-      `Duplicated option: ${duplicatedOptionNames.join(", ")}`
+      `Duplicated option: ${duplicateOptionNames.join(", ")}`
     );
   }
 
-  const duplicatedPositionalArgNames = util.findDuplicatedValues(
+  const duplicatedPositionalArgNames = util.findDuplicateValues(
     validPositionalArgValues.map(([name]) => name)
   );
   if (duplicatedPositionalArgNames.length !== 0) {

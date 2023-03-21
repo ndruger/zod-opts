@@ -4,7 +4,7 @@ import type {
   InternalPositionalArg,
 } from "./type";
 
-function getBuildInOptions(version?: string): InternalOption[] {
+function getBuiltInOptions(version?: string): InternalOption[] {
   const helpCommand: InternalOption = {
     name: "help",
     type: "boolean",
@@ -101,10 +101,10 @@ function generateDescriptionStr(
   const defaultStr = generateDefaultStr(option);
   const choiceStr = generateChoiceStr(option);
 
-  return `${collapse([descriptionStr, choiceStr, defaultStr])}  `;
+  return `${collapseWhiteSpace([descriptionStr, choiceStr, defaultStr])}  `;
 }
 
-function collapse(words: string[], splitter = " "): string {
+function collapseWhiteSpace(words: string[], splitter = " "): string {
   return words.filter((s) => s !== "").join(splitter);
 }
 
@@ -169,10 +169,10 @@ export function generateGlobalHelp({
 }): string {
   const globalUsage = generateGlobalUsage(name ?? "program", positionalArgs);
   const descriptionStr = description !== undefined ? `${description}` : "";
-  const optionsWithBuildIn = getBuildInOptions(version).concat(options);
+  const optionsWithBuildIn = getBuiltInOptions(version).concat(options);
   const optionsText = generateOptionsText(optionsWithBuildIn);
   const positionalArgsText = generatePositionalArgsText(positionalArgs);
-  return `${collapse(
+  return `${collapseWhiteSpace(
     [globalUsage, descriptionStr, positionalArgsText, optionsText],
     "\n\n"
   )}\n`;
@@ -194,12 +194,12 @@ export function generateCommandHelp({
     positionalArg,
     command.name
   );
-  const optionsWithBuildIn = getBuildInOptions(version).concat(options);
+  const optionsWithBuildIn = getBuiltInOptions(version).concat(options);
   const descriptionStr =
     command.description !== undefined ? `${command.description}` : "";
   const optionsText = generateOptionsText(optionsWithBuildIn);
   const positionalArgsText = generatePositionalArgsText(positionalArg);
-  return `${collapse(
+  return `${collapseWhiteSpace(
     [globalUsage, descriptionStr, positionalArgsText, optionsText],
     "\n\n"
   )}\n`;
@@ -219,8 +219,8 @@ export function generateGlobalCommandHelp({
   const globalUsage = generateGlobalCommandUsage(name ?? "script");
   const descriptionStr = description !== undefined ? `${description}` : "";
   const commandsText = generateCommandsText(commands);
-  const optionsText = generateOptionsText(getBuildInOptions(version));
-  return `${collapse(
+  const optionsText = generateOptionsText(getBuiltInOptions(version));
+  return `${collapseWhiteSpace(
     [globalUsage, descriptionStr, commandsText, optionsText],
     "\n\n"
   )}\n`;

@@ -44,7 +44,7 @@ export function generateZodShape(
   return optionShape;
 }
 
-export function generateInternalParserAndParse({
+export function createInternalParserAndParse({
   options,
   positionalArgs,
   args,
@@ -76,7 +76,7 @@ export function generateInternalParserAndParse({
       options: internalOptions,
       positionalArgs: internalPositionalArgs,
     });
-    debugLog("generateInternalParserAndParse", {
+    debugLog("createInternalParserAndParse", {
       parsed: JSON.stringify(parsed),
     });
     if (parsed.isHelp) {
@@ -97,7 +97,7 @@ export function generateInternalParserAndParse({
 
     const { options: validOptions, positionalArgs: validPositionalArgs } =
       validate(parsed, internalOptions, internalPositionalArgs);
-    debugLog("generateInternalParserAndParse", {
+    debugLog("createInternalParserAndParse", {
       validOptions: JSON.stringify(validOptions),
       validPositionalArgs: JSON.stringify(validPositionalArgs),
     });
@@ -117,7 +117,7 @@ export function generateInternalParserAndParse({
       help,
     };
   } catch (e) {
-    debugLog("generateInternalParserAndParse handle error", e);
+    debugLog("createInternalParserAndParse handle error", e);
     if (!(e instanceof ParseError)) {
       throw e;
     }

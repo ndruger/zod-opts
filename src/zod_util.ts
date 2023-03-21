@@ -70,7 +70,7 @@ function isRequired(def: ZodDef): boolean {
   return true;
 }
 
-function solveInnerType(def: ZodDef): ZodDef {
+function resolveInnerType(def: ZodDef): ZodDef {
   if (
     [
       ZodFirstPartyTypeKind.ZodOptional,
@@ -78,10 +78,10 @@ function solveInnerType(def: ZodDef): ZodDef {
     ].includes(def.typeName)
   ) {
     const innerDef = "innerType" in def ? def.innerType._def : def;
-    return solveInnerType(innerDef);
+    return resolveInnerType(innerDef);
   }
   if (def.typeName === "ZodEffects") {
-    return solveInnerType(def.schema._def);
+    return resolveInnerType(def.schema._def);
   }
   return def;
 }
@@ -90,7 +90,7 @@ export function toInternalType(
   def: ZodDef,
   isPositional: boolean = false
 ): BaseType {
-  const solvedDef: ZodDef = solveInnerType(def);
+  const solvedDef: ZodDef = resolveInnerType(def);
   switch (solvedDef.typeName) {
     case ZodFirstPartyTypeKind.ZodNumber:
       return "number";
@@ -145,7 +145,7 @@ function toInternalTypeForZodArray(def: ZodArrayDef): BaseType {
 }
 
 function getEnumValues(def: ZodDef): string[] | undefined {
-  const solvedDef: ZodDef = solveInnerType(def);
+  const solvedDef: ZodDef = resolveInnerType(def);
   if (solvedDef.typeName !== ZodFirstPartyTypeKind.ZodEnum) {
     return undefined;
   }
