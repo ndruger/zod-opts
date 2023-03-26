@@ -102,7 +102,7 @@ const parsed = parser()
     option1: {
       // if default() is specified, it will be optional option.
       type: z.string().describe("description of option").default("default"),
-      argName: "NameA", // used in Usage.
+      argumentName: "NameA", // used in Usage.
     },
     option2: {
       type: z

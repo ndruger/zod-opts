@@ -4,9 +4,9 @@ import { isNumericValue } from "./internal_parser";
 import { debugLog } from "./logger";
 import type {
   FormatValidOption,
-  FormatValidPositionalArg,
+  FormatValidPositionalArgument,
   InternalOption,
-  InternalPositionalArg,
+  InternalPositionalArgument,
 } from "./type";
 import * as util from "./util";
 
@@ -47,7 +47,7 @@ export function validateCandidateValue(
 }
 
 export function validatePositionalCandidateValue(
-  option: InternalPositionalArg,
+  option: InternalPositionalArgument,
   value: string | string[] | undefined
 ): ValidPositionalValue | undefined {
   if (option.isArray) {
@@ -84,11 +84,11 @@ export function validatePositionalCandidateValue(
 export function validateMultipleCommands(
   parsed: Parsed,
   options: InternalOption[],
-  positionalArgs: InternalPositionalArg[],
+  positionalArgs: InternalPositionalArgument[],
   commandName: string
 ): {
   options: FormatValidOption[];
-  positionalArgs: FormatValidPositionalArg[];
+  positionalArgs: FormatValidPositionalArgument[];
 } {
   try {
     return validate(parsed, options, positionalArgs);
@@ -103,10 +103,10 @@ export function validateMultipleCommands(
 export function validate(
   parsed: Parsed,
   options: InternalOption[],
-  positionalArgs: InternalPositionalArg[]
+  positionalArgs: InternalPositionalArgument[]
 ): {
   options: FormatValidOption[];
-  positionalArgs: FormatValidPositionalArg[];
+  positionalArgs: FormatValidPositionalArgument[];
 } {
   const optionMap = new Map(options.map((option) => [option.name, option]));
   const validOptionValues: Array<
@@ -134,7 +134,7 @@ export function validate(
   > = parsed.positionalCandidates.map((candidate) => {
     const name = candidate.name;
     const validated = validatePositionalCandidateValue(
-      positionalArgMap.get(name) as InternalPositionalArg,
+      positionalArgMap.get(name) as InternalPositionalArgument,
       candidate.value
     );
     if (validated === undefined) {

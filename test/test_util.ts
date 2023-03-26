@@ -3,7 +3,7 @@ import { expect, jest } from "@jest/globals";
 import type {
   BaseType,
   InternalOption,
-  InternalPositionalArg,
+  InternalPositionalArgument,
 } from "../src/type";
 
 export function mockConsole(
@@ -67,7 +67,7 @@ export function createInternalOption({
   return { type, name, alias, required, description, defaultValue, enumValues };
 }
 
-export function createInternalPositionalArg({
+export function createInternalPositionalArgument({
   type = "string",
   name = "pos1",
   required = true,
@@ -79,6 +79,6 @@ export function createInternalPositionalArg({
   required?: boolean;
   isArray?: boolean;
   enumValues?: string[];
-}): InternalPositionalArg {
+}): InternalPositionalArgument {
   return { type, name, required, isArray, enumValues };
 }

@@ -16,7 +16,7 @@ import type {
   ParseResultHelp,
   ParseResultMatch,
   ParseResultVersion,
-  PositionalArgs,
+  PositionalArguments,
   ValidateCallback,
 } from "./type";
 import * as util from "./util";
@@ -26,20 +26,20 @@ interface ParserState {
   version?: string;
   description?: string;
   options: Options;
-  positionalArgs: PositionalArgs;
+  positionalArgs: PositionalArguments;
   validation?: ValidateCallback<ZodRawShape>;
   handler?: Handler<ZodRawShape>;
 }
 
 export class Parser<
   TOptions extends Options = {},
-  TPositionalArgs extends PositionalArgs = []
+  TPositionalArguments extends PositionalArguments = []
 > {
   private _name: string | undefined;
   private _version: string | undefined;
   private _description: string | undefined;
   private readonly _options: Options = {};
-  private readonly _positionalArgs: PositionalArgs = [];
+  private readonly _positionalArgs: PositionalArguments = [];
   private _validation: ValidateCallback<ZodRawShape> | undefined;
   private _handler: Handler<ZodRawShape> | undefined;
 
@@ -56,7 +56,7 @@ export class Parser<
     version?: string;
     description?: string;
     options?: Options;
-    positionalArgs?: Narrow<PositionalArgs>;
+    positionalArgs?: Narrow<PositionalArguments>;
     validation?: ValidateCallback<ZodRawShape>;
     handler?: Handler<ZodRawShape>;
   } = {}) {
@@ -73,45 +73,50 @@ export class Parser<
     this._handler = handler;
   }
 
-  name(name: string): Parser<TOptions, TPositionalArgs> {
+  name(name: string): Parser<TOptions, TPositionalArguments> {
     this._name = name;
     return this;
   }
 
-  version(version: string): Parser<TOptions, TPositionalArgs> {
+  version(version: string): Parser<TOptions, TPositionalArguments> {
     this._version = version;
     return this;
   }
 
-  description(description: string): Parser<TOptions, TPositionalArgs> {
+  description(description: string): Parser<TOptions, TPositionalArguments> {
     this._description = description;
     return this;
   }
 
   options<TNewOptions extends Options>(
     options: TNewOptions
-  ): Parser<TNewOptions, TPositionalArgs> {
-    util.validateParamOptionsAndPositionalArgs(options, this._positionalArgs);
-    return new Parser<TNewOptions, TPositionalArgs>({
+  ): Parser<TNewOptions, TPositionalArguments> {
+    util.validateParamOptionsAndPositionalArguments(
+      options,
+      this._positionalArgs
+    );
+    return new Parser<TNewOptions, TPositionalArguments>({
       ...this._currentState(),
       options,
     });
   }
 
-  args<TNewPositionalArgs extends PositionalArgs>(
-    positionalArgs: Narrow<TNewPositionalArgs>
-  ): Parser<TOptions, TNewPositionalArgs> {
-    util.validateParamOptionsAndPositionalArgs(
+  args<TNewPositionalArguments extends PositionalArguments>(
+    positionalArgs: Narrow<TNewPositionalArguments>
+  ): Parser<TOptions, TNewPositionalArguments> {
+    util.validateParamOptionsAndPositionalArguments(
       this._options,
-      positionalArgs as TNewPositionalArgs
+      positionalArgs as TNewPositionalArguments
     );
-    return new Parser<TOptions, TNewPositionalArgs>({
+    return new Parser<TOptions, TNewPositionalArguments>({
       ...this._currentState(),
-      positionalArgs: positionalArgs as TNewPositionalArgs,
+      positionalArgs: positionalArgs as TNewPositionalArguments,
     });
   }
 
-  _internalHandler<TShape extends GenerateZodShape<TOptions, TPositionalArgs>>(
+  _internalHandler<
+    TShape extends GenerateZodShape<TOptions, TPositionalArguments>
+  >(
     handler: (
       arg0:
         | ParseResultMatch<z.infer<ZodObject<TShape>>>
@@ -119,14 +124,14 @@ export class Parser<
         | ParseResultHelp
         | ParseResultVersion
     ) => void
-  ): Parser<TOptions, TPositionalArgs> {
+  ): Parser<TOptions, TPositionalArguments> {
     this._handler = handler as Handler<ZodRawShape>;
     return this;
   }
 
-  validation<TShape extends GenerateZodShape<TOptions, TPositionalArgs>>(
+  validation<TShape extends GenerateZodShape<TOptions, TPositionalArguments>>(
     validation: (parsed: z.infer<ZodObject<TShape>>) => true | string
-  ): Parser<TOptions, TPositionalArgs> {
+  ): Parser<TOptions, TPositionalArguments> {
     this._validation = validation as ValidateCallback<ZodRawShape>;
     return this;
   }
@@ -138,13 +143,12 @@ export class Parser<
 
   getHelp(): string {
     const internalOptions = helper.generateInternalOptions(this._options);
-    const internalPositionalArgs = helper.generateInternalPositionalArgs(
-      this._positionalArgs
-    );
+    const internalPositionalArguments =
+      helper.generateInternalPositionalArguments(this._positionalArgs);
 
     return generateGlobalHelp({
       options: internalOptions,
-      positionalArgs: internalPositionalArgs,
+      positionalArgs: internalPositionalArguments,
       name: this._scriptName(),
       description: this._description,
       version: this._version,
@@ -153,7 +157,7 @@ export class Parser<
 
   parse(
     args?: string[]
-  ): z.infer<ZodObject<GenerateZodShape<TOptions, TPositionalArgs>>> {
+  ): z.infer<ZodObject<GenerateZodShape<TOptions, TPositionalArguments>>> {
     const validArgs = args !== undefined ? args : process.argv.slice(2);
 
     const {
@@ -167,7 +171,7 @@ export class Parser<
     const shape = helper.generateZodShape(
       options,
       positionalArgs
-    ) as GenerateZodShape<TOptions, TPositionalArgs>;
+    ) as GenerateZodShape<TOptions, TPositionalArguments>;
 
     const handlerArg = helper.createInternalParserAndParse({
       options,

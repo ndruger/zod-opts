@@ -6,8 +6,8 @@ import type {
   ParseResultError,
   ParseResultHelp,
   ParseResultVersion,
-  PositionalArg,
-  PositionalArgs,
+  PositionalArgument,
+  PositionalArguments,
 } from "./type";
 
 export function uniq<T>(array: T[]): T[] {
@@ -55,7 +55,7 @@ function validateParamOption(name: string, { alias }: Option): void {
   }
 }
 
-function validateParamPositionalArg({ name }: PositionalArg): void {
+function validateParamPositionalArg({ name }: PositionalArgument): void {
   if (!IdSchema.safeParse(name).success) {
     throw new Error(
       `Invalid positional argument name. Supported pattern is /${IdRegexStr}/: ${name}`
@@ -71,7 +71,7 @@ function checkForDuplicateOptionNames(options: Options | undefined): void {
 }
 
 function checkForDuplicatePositionalOptionNames(
-  positionalArgs: PositionalArgs
+  positionalArgs: PositionalArguments
 ): void {
   const duplicateName = findDuplicateValues(
     positionalArgs.map((option) => option.name)
@@ -84,7 +84,7 @@ function checkForDuplicatePositionalOptionNames(
 }
 function checkIfOptNameUsedWithPositionalOption(
   options: Options,
-  positionalArgs: PositionalArgs
+  positionalArgs: PositionalArguments
 ): void {
   Object.keys(options).forEach((optionName) => {
     if (positionalArgs.some((option) => option.name === optionName)) {
@@ -95,9 +95,9 @@ function checkIfOptNameUsedWithPositionalOption(
   });
 }
 
-export function validateParamOptionsAndPositionalArgs(
+export function validateParamOptionsAndPositionalArguments(
   options: Options,
-  positionalArgs: PositionalArgs
+  positionalArgs: PositionalArguments
 ): void {
   Object.entries(options).forEach(([optionName, option]) => {
     validateParamOption(optionName, option);

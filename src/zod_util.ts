@@ -4,9 +4,9 @@ import type {
   BaseType,
   BaseTypeT,
   InternalOption,
-  InternalPositionalArg,
+  InternalPositionalArgument,
   Option,
-  PositionalArg,
+  PositionalArgument,
   ZodDef,
 } from "./type";
 import { BASE_TYPES } from "./type";
@@ -166,7 +166,7 @@ export function optionToInternal(option: Option, name: string): InternalOption {
     type: internalType,
     name,
     alias: option.alias,
-    argName: option.argName,
+    argumentName: option.argumentName,
     description,
     required: isRequired(def),
     defaultValue,
@@ -175,8 +175,8 @@ export function optionToInternal(option: Option, name: string): InternalOption {
 }
 
 export function positionalArgToInternal(
-  option: PositionalArg
-): InternalPositionalArg {
+  option: PositionalArgument
+): InternalPositionalArgument {
   // sequence of this is important. It changes exception.
   const zodType = option.type;
   const def: ZodDef = zodType._def;
