@@ -3,12 +3,12 @@ import {
   generateGlobalHelp,
   generateGlobalUsage,
   generateOptionsText,
-  generatePositionalArgsText,
+  generatePositionalArgumentsText,
 } from "../src/help";
 import type {
   InternalCommand,
   InternalOption,
-  InternalPositionalArg,
+  InternalPositionalArgument,
 } from "../src/type";
 import { createInternalOption } from "./test_util";
 
@@ -54,7 +54,7 @@ describe("generateOptionsText()", () => {
 describe("generateGlobalUsage()", () => {
   test("common", () => {
     const scriptName = "scriptA";
-    const positionalArgs: InternalPositionalArg[] = [
+    const positionalArgs: InternalPositionalArgument[] = [
       {
         name: "positional1",
         type: "string",
@@ -82,9 +82,9 @@ describe("generateGlobalUsage()", () => {
   });
 });
 
-describe("generatePositionalArgsText()", () => {
+describe("generatePositionalArgumentsText()", () => {
   test("", () => {
-    const positionalArgs: InternalPositionalArg[] = [
+    const positionalArgs: InternalPositionalArgument[] = [
       {
         name: "positional1",
         type: "string",
@@ -105,7 +105,7 @@ describe("generatePositionalArgsText()", () => {
         isArray: true,
       },
     ];
-    const result = generatePositionalArgsText(positionalArgs);
+    const result = generatePositionalArgumentsText(positionalArgs);
     expect(result).toEqual(`Arguments:
   positional1                 [required]
   positional2                 [required]
@@ -151,7 +151,7 @@ describe("generateGlobalHelp()", () => {
       },
     ];
 
-    const positionalArgs: InternalPositionalArg[] = [
+    const positionalArgs: InternalPositionalArgument[] = [
       {
         name: "positional1",
         type: "string",

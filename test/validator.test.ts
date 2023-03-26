@@ -4,7 +4,10 @@ import {
   validateCandidateValue,
   validatePositionalCandidateValue,
 } from "../src/validator";
-import { createInternalOption, createInternalPositionalArg } from "./test_util";
+import {
+  createInternalOption,
+  createInternalPositionalArgument,
+} from "./test_util";
 
 describe("validateCandidateValue()", () => {
   test("valid", () => {
@@ -108,7 +111,7 @@ describe("validatePositionalCandidateValue()", () => {
   test("valid", () => {
     expect(
       validatePositionalCandidateValue(
-        createInternalPositionalArg({ type: "string" }),
+        createInternalPositionalArgument({ type: "string" }),
         "str"
       )
     ).toEqual({
@@ -117,7 +120,7 @@ describe("validatePositionalCandidateValue()", () => {
 
     expect(
       validatePositionalCandidateValue(
-        createInternalPositionalArg({ type: "number" }),
+        createInternalPositionalArgument({ type: "number" }),
         "10"
       )
     ).toEqual({
@@ -126,7 +129,7 @@ describe("validatePositionalCandidateValue()", () => {
 
     expect(
       validatePositionalCandidateValue(
-        createInternalPositionalArg({ type: "number" }),
+        createInternalPositionalArgument({ type: "number" }),
         "-10.1"
       )
     ).toEqual({
@@ -135,7 +138,7 @@ describe("validatePositionalCandidateValue()", () => {
 
     expect(
       validatePositionalCandidateValue(
-        createInternalPositionalArg({ type: "string", isArray: true }),
+        createInternalPositionalArgument({ type: "string", isArray: true }),
         ["str1", "str2"]
       )
     ).toEqual({
@@ -144,7 +147,7 @@ describe("validatePositionalCandidateValue()", () => {
 
     expect(
       validatePositionalCandidateValue(
-        createInternalPositionalArg({ type: "number", isArray: true }),
+        createInternalPositionalArgument({ type: "number", isArray: true }),
         ["10", "-10.1"]
       )
     ).toEqual({
@@ -155,42 +158,42 @@ describe("validatePositionalCandidateValue()", () => {
   test("invalid", () => {
     expect(
       validatePositionalCandidateValue(
-        createInternalPositionalArg({ type: "string" }),
+        createInternalPositionalArgument({ type: "string" }),
         undefined
       )
     ).toEqual(undefined);
 
     expect(
       validatePositionalCandidateValue(
-        createInternalPositionalArg({ type: "number" }),
+        createInternalPositionalArgument({ type: "number" }),
         undefined
       )
     ).toEqual(undefined);
 
     expect(
       validatePositionalCandidateValue(
-        createInternalPositionalArg({ type: "string" }),
+        createInternalPositionalArgument({ type: "string" }),
         ""
       )
     ).toEqual({ value: "" });
 
     expect(
       validatePositionalCandidateValue(
-        createInternalPositionalArg({ type: "number" }),
+        createInternalPositionalArgument({ type: "number" }),
         "str"
       )
     ).toEqual(undefined);
 
     expect(
       validatePositionalCandidateValue(
-        createInternalPositionalArg({ type: "number", isArray: true }),
+        createInternalPositionalArgument({ type: "number", isArray: true }),
         ["str"]
       )
     ).toEqual(undefined);
 
     expect(
       validatePositionalCandidateValue(
-        createInternalPositionalArg({ type: "number", isArray: true }),
+        createInternalPositionalArgument({ type: "number", isArray: true }),
         ["10", ""]
       )
     ).toEqual(undefined);

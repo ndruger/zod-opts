@@ -6,10 +6,10 @@ import { parse } from "./internal_parser";
 import { debugLog } from "./logger";
 import type {
   InternalOption,
-  InternalPositionalArg,
+  InternalPositionalArgument,
   Options,
   ParseResult,
-  PositionalArgs,
+  PositionalArguments,
 } from "./type";
 import { validate } from "./validator";
 import * as zodUtil from "./zod_util";
@@ -20,15 +20,15 @@ export function generateInternalOptions(options: Options): InternalOption[] {
   });
 }
 
-export function generateInternalPositionalArgs(
-  positionalArgs: PositionalArgs
-): InternalPositionalArg[] {
+export function generateInternalPositionalArguments(
+  positionalArgs: PositionalArguments
+): InternalPositionalArgument[] {
   return positionalArgs.map(zodUtil.positionalArgToInternal);
 }
 
 export function generateZodShape(
   options?: Options,
-  positionalArgs?: PositionalArgs
+  positionalArgs?: PositionalArguments
 ): z.ZodRawShape {
   const optionShape = Object.fromEntries(
     Object.entries(options === undefined ? {} : options)
@@ -53,18 +53,19 @@ export function createInternalParserAndParse({
   version,
 }: {
   options: Options;
-  positionalArgs: PositionalArgs;
+  positionalArgs: PositionalArguments;
   args: string[];
   name?: string;
   description?: string;
   version?: string;
 }): ParseResult<object> {
   const internalOptions = generateInternalOptions(options);
-  const internalPositionalArgs = generateInternalPositionalArgs(positionalArgs);
+  const internalPositionalArguments =
+    generateInternalPositionalArguments(positionalArgs);
 
   const help = generateGlobalHelp({
     options: internalOptions,
-    positionalArgs: internalPositionalArgs,
+    positionalArgs: internalPositionalArguments,
     name,
     description,
     version,
@@ -74,7 +75,7 @@ export function createInternalParserAndParse({
     const parsed = parse({
       args,
       options: internalOptions,
-      positionalArgs: internalPositionalArgs,
+      positionalArgs: internalPositionalArguments,
     });
     debugLog("createInternalParserAndParse", {
       parsed: JSON.stringify(parsed),
@@ -95,17 +96,17 @@ export function createInternalParserAndParse({
       };
     }
 
-    const { options: validOptions, positionalArgs: validPositionalArgs } =
-      validate(parsed, internalOptions, internalPositionalArgs);
+    const { options: validOptions, positionalArgs: validPositionalArguments } =
+      validate(parsed, internalOptions, internalPositionalArguments);
     debugLog("createInternalParserAndParse", {
       validOptions: JSON.stringify(validOptions),
-      validPositionalArgs: JSON.stringify(validPositionalArgs),
+      validPositionalArguments: JSON.stringify(validPositionalArguments),
     });
     const validOptionMap = Object.fromEntries(
       validOptions.map((option) => [option.name, option.value])
     );
     const validPositionalArgMap = Object.fromEntries(
-      validPositionalArgs.map((option) => [option.name, option.value])
+      validPositionalArguments.map((option) => [option.name, option.value])
     );
 
     return {

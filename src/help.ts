@@ -1,7 +1,7 @@
 import type {
   InternalCommand,
   InternalOption,
-  InternalPositionalArg,
+  InternalPositionalArgument,
 } from "./type";
 
 function getBuiltInOptions(version?: string): InternalOption[] {
@@ -24,7 +24,7 @@ function getBuiltInOptions(version?: string): InternalOption[] {
   return version === undefined ? [helpCommand] : [helpCommand, versionCommand];
 }
 
-function padTable(rows: string[][]): string[][] {
+function addPaddingToTable(rows: string[][]): string[][] {
   if (rows.length === 0) {
     return rows;
   }
@@ -45,7 +45,7 @@ function tableToText(rows: string[][]): string {
 
 export function generateGlobalUsage(
   scriptName: string,
-  positionalArgs: InternalPositionalArg[],
+  positionalArgs: InternalPositionalArgument[],
   commandName?: string
 ): string {
   const positionalStr = positionalArgs
@@ -65,15 +65,15 @@ export function generateGlobalCommandUsage(scriptName: string): string {
   return `Usage: ${scriptName} [options] <command>`;
 }
 
-function generateDefaultStr(
-  option: InternalOption | InternalPositionalArg
+function generateDefaultString(
+  option: InternalOption | InternalPositionalArgument
 ): string {
   return option.defaultValue !== undefined
     ? `(default: ${JSON.stringify(option.defaultValue)})`
     : "";
 }
 
-function generateNameAndArgStr(option: InternalOption): string {
+function generateNameAndArgString(option: InternalOption): string {
   switch (option.type) {
     case "string":
       return `--${option.name} <${option.argName ?? "string"}>`;
@@ -84,8 +84,8 @@ function generateNameAndArgStr(option: InternalOption): string {
   }
 }
 
-function generateChoiceStr(
-  option: InternalOption | InternalPositionalArg
+function generateChoiceString(
+  option: InternalOption | InternalPositionalArgument
 ): string {
   if (option.enumValues === undefined) {
     return "";
@@ -93,13 +93,13 @@ function generateChoiceStr(
   return `(choices: ${option.enumValues.map((s) => `"${s}"`).join(", ")})`;
 }
 
-function generateDescriptionStr(
-  option: InternalOption | InternalPositionalArg
+function generateDescriptionString(
+  option: InternalOption | InternalPositionalArgument
 ): string {
   const descriptionStr =
     option.description !== undefined ? option.description : "";
-  const defaultStr = generateDefaultStr(option);
-  const choiceStr = generateChoiceStr(option);
+  const defaultStr = generateDefaultString(option);
+  const choiceStr = generateChoiceString(option);
 
   return `${collapseWhiteSpace([descriptionStr, choiceStr, defaultStr])}  `;
 }
@@ -115,16 +115,16 @@ export function generateOptionsText(
   const indentStr = " ".repeat(indent);
   const table = options.map((option) => {
     const aliasStr = option.alias !== undefined ? `-${option.alias}, ` : "";
-    const nameAndArgStr = `${generateNameAndArgStr(option)}  `;
-    const descriptionStr = generateDescriptionStr(option);
+    const nameAndArgStr = `${generateNameAndArgString(option)}  `;
+    const descriptionStr = generateDescriptionString(option);
     const requiredStr = option.required ? "[required]" : "";
     return [indentStr, aliasStr, nameAndArgStr, descriptionStr, requiredStr];
   });
-  return `Options:\n${tableToText(padTable(table))}`;
+  return `Options:\n${tableToText(addPaddingToTable(table))}`;
 }
 
-export function generatePositionalArgsText(
-  positionalArgs: InternalPositionalArg[],
+export function generatePositionalArgumentsText(
+  positionalArgs: InternalPositionalArgument[],
   indent: number = 2
 ): string {
   if (positionalArgs.length === 0) {
@@ -133,11 +133,11 @@ export function generatePositionalArgsText(
   const indentStr = " ".repeat(indent);
   const table = positionalArgs.map((arg) => {
     const nameAndArgStr = `${arg.name}  `;
-    const descriptionStr = generateDescriptionStr(arg);
+    const descriptionStr = generateDescriptionString(arg);
     const requiredStr = arg.required ? "[required]" : "";
     return [indentStr, nameAndArgStr, descriptionStr, requiredStr];
   });
-  return `Arguments:\n${tableToText(padTable(table))}`;
+  return `Arguments:\n${tableToText(addPaddingToTable(table))}`;
 }
 
 export function generateCommandsText(
@@ -151,7 +151,7 @@ export function generateCommandsText(
       command.description !== undefined ? `${command.description}` : "";
     return [indentStr, nameStr, descriptionStr];
   });
-  return `Commands:\n${tableToText(padTable(table))}`;
+  return `Commands:\n${tableToText(addPaddingToTable(table))}`;
 }
 
 export function generateGlobalHelp({
@@ -162,7 +162,7 @@ export function generateGlobalHelp({
   version,
 }: {
   options: InternalOption[];
-  positionalArgs: InternalPositionalArg[];
+  positionalArgs: InternalPositionalArgument[];
   name?: string;
   description?: string;
   version?: string;
@@ -171,7 +171,7 @@ export function generateGlobalHelp({
   const descriptionStr = description !== undefined ? `${description}` : "";
   const optionsWithBuildIn = getBuiltInOptions(version).concat(options);
   const optionsText = generateOptionsText(optionsWithBuildIn);
-  const positionalArgsText = generatePositionalArgsText(positionalArgs);
+  const positionalArgsText = generatePositionalArgumentsText(positionalArgs);
   return `${collapseWhiteSpace(
     [globalUsage, descriptionStr, positionalArgsText, optionsText],
     "\n\n"
@@ -198,7 +198,7 @@ export function generateCommandHelp({
   const descriptionStr =
     command.description !== undefined ? `${command.description}` : "";
   const optionsText = generateOptionsText(optionsWithBuildIn);
-  const positionalArgsText = generatePositionalArgsText(positionalArg);
+  const positionalArgsText = generatePositionalArgumentsText(positionalArg);
   return `${collapseWhiteSpace(
     [globalUsage, descriptionStr, positionalArgsText, optionsText],
     "\n\n"

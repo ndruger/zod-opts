@@ -5,7 +5,7 @@ import { z, type ZodObject, type ZodRawShape } from "zod";
 import { type Command } from "./command";
 import { ParseError } from "./error";
 import { generateCommandHelp, generateGlobalCommandHelp } from "./help";
-import { type CommandParsed, parseMultipleCommand } from "./internal_parser";
+import { type CommandParsed, parseMultipleCommands } from "./internal_parser";
 import { debugLog } from "./logger";
 import type {
   Handler,
@@ -258,7 +258,7 @@ export class CommandParser {
     commands: InternalCommand[],
     scriptName: string
   ): ParseResultMatch<object> {
-    const { options: validOptions, positionalArgs: validPositionalArgs } =
+    const { options: validOptions, positionalArgs: validPositionalArguments } =
       validateMultipleCommands(
         parsed,
         selectedCommand.options,
@@ -267,13 +267,13 @@ export class CommandParser {
       );
     debugLog("createInternalParserAndParse", {
       validOptions: JSON.stringify(validOptions),
-      validPositionalArgs: JSON.stringify(validPositionalArgs),
+      validPositionalArguments: JSON.stringify(validPositionalArguments),
     });
     const validOptionMap = Object.fromEntries(
       validOptions.map((option) => [option.name, option.value])
     );
     const validPositionalArgMap = Object.fromEntries(
-      validPositionalArgs.map((option) => [option.name, option.value])
+      validPositionalArguments.map((option) => [option.name, option.value])
     );
 
     return {
@@ -297,11 +297,11 @@ export class CommandParser {
     | ParseResultVersion
     | ParseResultMatch<object> {
     try {
-      const parsed = parseMultipleCommand({
+      const parsed = parseMultipleCommands({
         args,
         commands,
       });
-      debugLog("parseMultipleCommand", {
+      debugLog("parseMultipleCommands", {
         parsed: JSON.stringify(parsed),
       });
       const selectedCommand = commands.find(

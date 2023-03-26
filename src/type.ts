@@ -39,19 +39,21 @@ export interface Option {
 
 export type Options = Record<string, Option>;
 
-export interface PositionalArg {
+export interface PositionalArgument {
   name: string;
   type: ZodTypeAny;
   description?: string;
 }
 
-export type PositionalArgs = [] | [PositionalArg, ...PositionalArg[]];
+export type PositionalArguments =
+  | []
+  | [PositionalArgument, ...PositionalArgument[]];
 
 export type OptionsToZodShape<T extends Options> = {
   [Key in keyof T]: T[Key]["type"];
 };
 
-export type PositionalArgsToShape<T, TAcc = {}> = T extends [
+export type PositionalArgumentsToShape<T, TAcc = {}> = T extends [
   infer Head,
   ...infer Rest
 ]
@@ -60,7 +62,7 @@ export type PositionalArgsToShape<T, TAcc = {}> = T extends [
       type: infer ZodType;
     }
     ? Name extends string
-      ? PositionalArgsToShape<
+      ? PositionalArgumentsToShape<
           Rest,
           {
             // eslint-disable-next-line no-unused-vars
@@ -71,10 +73,10 @@ export type PositionalArgsToShape<T, TAcc = {}> = T extends [
     : TAcc
   : TAcc;
 
-export type GenerateZodShape<TOptions, TPositionalArgs> =
+export type GenerateZodShape<TOptions, TPositionalArguments> =
   (TOptions extends Options ? OptionsToZodShape<TOptions> : {}) &
-    (TPositionalArgs extends PositionalArgs
-      ? PositionalArgsToShape<TPositionalArgs>
+    (TPositionalArguments extends PositionalArguments
+      ? PositionalArgumentsToShape<TPositionalArguments>
       : {});
 
 export interface ParseResultMatch<T> {
@@ -122,7 +124,7 @@ export interface InternalOption {
   enumValues?: string[];
 }
 
-export interface InternalPositionalArg {
+export interface InternalPositionalArgument {
   type: "string" | "number";
   name: string;
   description?: string;
@@ -136,7 +138,7 @@ export interface InternalCommand {
   name: string;
   description?: string;
   options: InternalOption[];
-  positionalArgs: InternalPositionalArg[];
+  positionalArgs: InternalPositionalArgument[];
 }
 
 export type Handler<T extends ZodRawShape> = (

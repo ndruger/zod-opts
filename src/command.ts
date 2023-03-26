@@ -7,7 +7,7 @@ import type {
   InternalCommand,
   Narrow,
   Options,
-  PositionalArgs,
+  PositionalArguments,
   ValidateCallback,
 } from "./type";
 import * as util from "./util";
@@ -20,7 +20,7 @@ interface CommandState {
   name?: string;
   description?: string;
   options: Options;
-  positionalArgs: PositionalArgs;
+  positionalArgs: PositionalArguments;
   validation?: ValidateCallback<ZodRawShape>;
   handler?: Handler<ZodRawShape>;
   action?: ActionCallback<ZodRawShape>;
@@ -28,12 +28,12 @@ interface CommandState {
 
 export class Command<
   TOptions extends Options = {},
-  TPositionalArgs extends PositionalArgs = []
+  TPositionalArguments extends PositionalArguments = []
 > {
   private readonly _name: string | undefined;
   private _description: string | undefined;
   private readonly _options: Options = {};
-  private readonly _positionalArgs: PositionalArgs = [];
+  private readonly _positionalArgs: PositionalArguments = [];
   private _validation: ValidateCallback<ZodRawShape> | undefined;
   private readonly _handler: Handler<ZodRawShape> | undefined;
   private _action: ActionCallback<ZodRawShape> | undefined;
@@ -50,7 +50,7 @@ export class Command<
     name?: string;
     description?: string;
     options?: Options;
-    positionalArgs?: Narrow<PositionalArgs>;
+    positionalArgs?: Narrow<PositionalArguments>;
     validation?: ValidateCallback<ZodRawShape>;
     handler?: Handler<ZodRawShape>;
     action?: ActionCallback<ZodRawShape>;
@@ -68,44 +68,47 @@ export class Command<
     this._action = action;
   }
 
-  description(description: string): Command<TOptions, TPositionalArgs> {
+  description(description: string): Command<TOptions, TPositionalArguments> {
     this._description = description;
     return this;
   }
 
   options<TNewOptions extends Options>(
     options: TNewOptions
-  ): Command<TNewOptions, TPositionalArgs> {
-    util.validateParamOptionsAndPositionalArgs(options, this._positionalArgs);
-    return new Command<TNewOptions, TPositionalArgs>({
+  ): Command<TNewOptions, TPositionalArguments> {
+    util.validateParamOptionsAndPositionalArguments(
+      options,
+      this._positionalArgs
+    );
+    return new Command<TNewOptions, TPositionalArguments>({
       ...this._currentState(),
       options,
     });
   }
 
-  args<TNewPositionalArgs extends PositionalArgs>(
-    positionalArgs: Narrow<TNewPositionalArgs>
-  ): Command<TOptions, TNewPositionalArgs> {
-    util.validateParamOptionsAndPositionalArgs(
+  args<TNewPositionalArguments extends PositionalArguments>(
+    positionalArgs: Narrow<TNewPositionalArguments>
+  ): Command<TOptions, TNewPositionalArguments> {
+    util.validateParamOptionsAndPositionalArguments(
       this._options,
-      positionalArgs as TNewPositionalArgs
+      positionalArgs as TNewPositionalArguments
     );
-    return new Command<TOptions, TNewPositionalArgs>({
+    return new Command<TOptions, TNewPositionalArguments>({
       ...this._currentState(),
-      positionalArgs: positionalArgs as TNewPositionalArgs,
+      positionalArgs: positionalArgs as TNewPositionalArguments,
     });
   }
 
-  validation<TShape extends GenerateZodShape<TOptions, TPositionalArgs>>(
+  validation<TShape extends GenerateZodShape<TOptions, TPositionalArguments>>(
     validation: (parsed: z.infer<ZodObject<TShape>>) => true | string
-  ): Command<TOptions, TPositionalArgs> {
+  ): Command<TOptions, TPositionalArguments> {
     this._validation = validation as ValidateCallback<ZodRawShape>;
     return this;
   }
 
-  action<TShape extends GenerateZodShape<TOptions, TPositionalArgs>>(
+  action<TShape extends GenerateZodShape<TOptions, TPositionalArguments>>(
     action: (parsed: z.infer<ZodObject<TShape>>) => void
-  ): Command<TOptions, TPositionalArgs> {
+  ): Command<TOptions, TPositionalArguments> {
     this._action = action as ActionCallback<ZodRawShape>;
     return this;
   }
@@ -116,7 +119,7 @@ export class Command<
       name: this._name as string,
       description: this._description,
       options: helper.generateInternalOptions(this._options),
-      positionalArgs: helper.generateInternalPositionalArgs(
+      positionalArgs: helper.generateInternalPositionalArguments(
         this._positionalArgs
       ),
     };

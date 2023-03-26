@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { Option, PositionalArg } from "../src/type";
+import type { Option, PositionalArgument } from "../src/type";
 import { optionToInternal, positionalArgToInternal } from "../src/zod_util";
 
 export function createOption({
@@ -23,7 +23,7 @@ export function createPositionalArg({
   type?: z.ZodTypeAny;
   name?: string;
   description?: string;
-}): PositionalArg {
+}): PositionalArgument {
   return { type, name, description };
 }
 

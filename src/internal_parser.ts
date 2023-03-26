@@ -3,7 +3,7 @@ import { debugLog } from "./logger";
 import type {
   InternalCommand,
   InternalOption,
-  InternalPositionalArg,
+  InternalPositionalArgument,
 } from "./type";
 
 interface Candidate {
@@ -21,7 +21,7 @@ export function isNumericValue(str: string): boolean {
   return !isNaN(str as unknown as number) && !isNaN(parseFloat(str));
 }
 
-function optionNeedsValue(option: InternalOption): boolean {
+function optionRequiresValue(option: InternalOption): boolean {
   return option.type !== "boolean";
 }
 
@@ -50,21 +50,21 @@ export function findOptionByPrefixedName(
   return undefined;
 }
 
-type ValidateOptionArgResult =
-  | { ok: true; value: "optionNeedsValue" | "noValue" }
+type ValidateOptionArgumentResult =
+  | { ok: true; value: "optionRequiresValue" | "noValue" }
   | { ok: false; message: string };
 
-function validateOptionArg(
+function validateOptionArgument(
   option: InternalOption,
   isNegative: boolean,
   value: string | undefined,
   isForcedValue: boolean
-): ValidateOptionArgResult {
-  if (optionNeedsValue(option) && value === undefined) {
+): ValidateOptionArgumentResult {
+  if (optionRequiresValue(option) && value === undefined) {
     // ex. --foo and foo is string
     return { ok: false, message: `Option '${option.name}' needs value` };
   }
-  if (isForcedValue && !optionNeedsValue(option)) {
+  if (isForcedValue && !optionRequiresValue(option)) {
     // ex. --foo=bar and foo is boolean
     return {
       ok: false,
@@ -81,7 +81,7 @@ function validateOptionArg(
 
   return {
     ok: true,
-    value: optionNeedsValue(option) ? "optionNeedsValue" : "noValue",
+    value: optionRequiresValue(option) ? "optionRequiresValue" : "noValue",
   };
 }
 
@@ -89,7 +89,7 @@ function removeOptionPrefix(prefixedName: string): string {
   return prefixedName.replace(/^-+/, "");
 }
 
-function parseLongNameOptionArg(
+function parseLongNameOptionArgument(
   options: InternalOption[],
   arg: string,
   next: string | undefined
@@ -108,7 +108,7 @@ function parseLongNameOptionArg(
       );
     }
     const [option, isNegative] = result;
-    const validateResult = validateOptionArg(
+    const validateResult = validateOptionArgument(
       option,
       isNegative,
       forcedValue,
@@ -133,17 +133,23 @@ function parseLongNameOptionArg(
       );
     }
     const [option, isNegative] = result;
-    const validateResult = validateOptionArg(option, isNegative, next, false);
+    const validateResult = validateOptionArgument(
+      option,
+      isNegative,
+      next,
+      false
+    );
     if (!validateResult.ok) {
       throw new ParseError(`${validateResult.message}: ${option.name}`);
     }
     return {
       candidate: {
         name: option.name,
-        value: validateResult.value === "optionNeedsValue" ? next : undefined,
+        value:
+          validateResult.value === "optionRequiresValue" ? next : undefined,
         isNegative,
       },
-      shift: validateResult.value === "optionNeedsValue" ? 2 : 1,
+      shift: validateResult.value === "optionRequiresValue" ? 2 : 1,
     };
   }
 }
@@ -154,7 +160,7 @@ function parseLongNameOptionArg(
 // ex. -abc10 => -abc=10: ng
 // ex. -a10 => -a=10: ok
 // ex. -ab10 => -a, -b=10: ng
-function parseShortNameMultipleOptionArg(
+function parseShortNameMultipleOptionArgument(
   options: InternalOption[],
   arg: string,
   next: string | undefined
@@ -162,7 +168,7 @@ function parseShortNameMultipleOptionArg(
   let shift = 1;
   const candidates: Candidate[] = [];
 
-  debugLog("parseShortNameMultipleOptionArg", arg, next);
+  debugLog("parseShortNameMultipleOptionArgument", arg, next);
 
   const text = arg.slice(1);
   for (let i = 0; i < text.length; i++) {
@@ -172,7 +178,7 @@ function parseShortNameMultipleOptionArg(
       throw new ParseError(`Invalid option: ${c}`);
     }
     const [option] = result;
-    if (optionNeedsValue(option)) {
+    if (optionRequiresValue(option)) {
       const isLast = text[i + 1] === undefined;
       if (isLast && next !== undefined) {
         candidates.push({
@@ -206,7 +212,7 @@ function parseShortNameMultipleOptionArg(
   return { candidates, shift };
 }
 
-function parseShortNameOptionArg(
+function parseShortNameOptionArgument(
   options: InternalOption[],
   arg: string,
   next: string | undefined
@@ -225,10 +231,10 @@ function parseShortNameOptionArg(
   // If findOptionByPrefixedName() returns matched option, it is treated as single option even if the validation fails.
   const result = findOptionByPrefixedName(options, prefixedName);
   if (result === undefined) {
-    return parseShortNameMultipleOptionArg(options, prefixedName, next);
+    return parseShortNameMultipleOptionArgument(options, prefixedName, next);
   }
   const [option] = result;
-  const validateResult = validateOptionArg(option, false, next, false);
+  const validateResult = validateOptionArgument(option, false, next, false);
   if (!validateResult.ok) {
     throw new ParseError(`${validateResult.message}: ${option.name}`);
   }
@@ -236,30 +242,35 @@ function parseShortNameOptionArg(
     candidates: [
       {
         name: option.name,
-        value: validateResult.value === "optionNeedsValue" ? next : undefined,
+        value:
+          validateResult.value === "optionRequiresValue" ? next : undefined,
         isNegative: false,
       },
     ],
-    shift: validateResult.value === "optionNeedsValue" ? 2 : 1,
+    shift: validateResult.value === "optionRequiresValue" ? 2 : 1,
   };
 }
 
-function parseOptionArg(
+function parseOptionArgument(
   options: InternalOption[],
   arg: string,
   next: string | undefined
 ): { candidates: Candidate[]; shift: number } {
   if (arg.startsWith("--")) {
-    const { candidate, shift } = parseLongNameOptionArg(options, arg, next);
+    const { candidate, shift } = parseLongNameOptionArgument(
+      options,
+      arg,
+      next
+    );
     return {
       candidates: [candidate],
       shift,
     };
   }
-  return parseShortNameOptionArg(options, arg, next);
+  return parseShortNameOptionArgument(options, arg, next);
 }
 
-export function pickPositionalArgs(
+export function pickPositionalArguments(
   targets: string[],
   options: InternalOption[],
   hasDoubleDash: boolean
@@ -274,9 +285,9 @@ export function pickPositionalArgs(
   return { positionalArgs: targets.slice(0, foundIndex), shift: foundIndex };
 }
 
-export function parsePositionalArgs(
+export function parsePositionalArguments(
   args: string[],
-  positionalArgs: InternalPositionalArg[]
+  positionalArgs: InternalPositionalArgument[]
 ): PositionalCandidate[] {
   let i = 0;
   let candidates: PositionalCandidate[] = [];
@@ -375,7 +386,7 @@ function processOption(
   const arg = args[state.index];
   const next = pickNextNonOption(args[state.index + 1], options);
 
-  const { candidates, shift } = parseOptionArg(options, arg, next);
+  const { candidates, shift } = parseOptionArgument(options, arg, next);
   return {
     ...state,
     index: state.index + shift,
@@ -383,21 +394,21 @@ function processOption(
   };
 }
 
-function processPositional(
+function processPositionalArguments(
   state: State,
   args: string[],
   options: InternalOption[],
-  positionalArgs: InternalPositionalArg[]
+  positionalArgs: InternalPositionalArgument[]
 ): State {
   if (state.positionalCandidates.length !== 0) {
     throw new ParseError("Positional arguments specified twice");
   }
-  const { positionalArgs: picked, shift } = pickPositionalArgs(
+  const { positionalArgs: picked, shift } = pickPositionalArguments(
     args.slice(state.index),
     options,
     state.hasDoubleDash
   );
-  const positionalCandidates = parsePositionalArgs(picked, positionalArgs);
+  const positionalCandidates = parsePositionalArguments(picked, positionalArgs);
 
   return {
     ...state,
@@ -414,18 +425,18 @@ function isVersionOption(arg: string): boolean {
   return arg === "-V" || arg === "--version";
 }
 
-interface ParseToSearchCommandResult {
+interface ParseToFindCommandResult {
   index: number;
   isHelp: boolean;
   isVersion: boolean;
   commandName: string | undefined;
 }
 
-function parseToSearchCommand(
+function parseToFindCommand(
   args: string[],
   commandNames: string[]
-): ParseToSearchCommandResult {
-  let state: ParseToSearchCommandResult = {
+): ParseToFindCommandResult {
+  let state: ParseToFindCommandResult = {
     index: 0,
     isHelp: false,
     isVersion: false,
@@ -461,14 +472,14 @@ function parseToSearchCommand(
   return state;
 }
 
-export function parseMultipleCommand({
+export function parseMultipleCommands({
   args,
   commands,
 }: {
   args: string[];
   commands: InternalCommand[];
 }): CommandParsed {
-  const searchResult = parseToSearchCommand(
+  const searchResult = parseToFindCommand(
     args,
     commands.map((command) => command.name)
   );
@@ -507,7 +518,7 @@ export function parse({
 }: {
   args: string[];
   options: InternalOption[];
-  positionalArgs: InternalPositionalArg[];
+  positionalArgs: InternalPositionalArgument[];
 }): Parsed {
   let state: State = {
     index: 0,
@@ -522,7 +533,7 @@ export function parse({
     const arg = args[state.index];
     debugLog("state", JSON.stringify(state));
     if (state.hasDoubleDash) {
-      state = processPositional(state, args, options, positionalArgs);
+      state = processPositionalArguments(state, args, options, positionalArgs);
     } else {
       if (arg === "--") {
         state = processDoubleDash(state);
@@ -535,7 +546,12 @@ export function parse({
       } else if (likesOptionArg(arg, options)) {
         state = processOption(state, args, options);
       } else {
-        state = processPositional(state, args, options, positionalArgs);
+        state = processPositionalArguments(
+          state,
+          args,
+          options,
+          positionalArgs
+        );
       }
     }
   }
