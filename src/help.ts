@@ -76,9 +76,9 @@ function generateDefaultString(
 function generateNameAndArgString(option: InternalOption): string {
   switch (option.type) {
     case "string":
-      return `--${option.name} <${option.argName ?? "string"}>`;
+      return `--${option.name} <${option.argumentName ?? "string"}>`;
     case "number":
-      return `--${option.name} <${option.argName ?? "number"}>`;
+      return `--${option.name} <${option.argumentName ?? "number"}>`;
     case "boolean":
       return `--${option.name}`;
   }

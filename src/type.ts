@@ -32,7 +32,7 @@ export type BaseTypeT = number | string | boolean;
 
 export interface Option {
   type: ZodTypeAny;
-  argName?: string;
+  argumentName?: string;
   alias?: string;
   description?: string;
 }
@@ -117,7 +117,7 @@ export interface InternalOption {
   type: BaseType;
   name: string; // ex. opt1
   alias?: string; // ex. o, ab
-  argName?: string;
+  argumentName?: string;
   description?: string;
   defaultValue?: string | number | boolean;
   required: boolean;
@@ -158,7 +158,7 @@ export interface FormatValidOption {
   value: string | number | boolean | undefined; // undefined of non required(optional / default)
 }
 
-export interface FormatValidPositionalArg {
+export interface FormatValidPositionalArgument {
   name: string;
   value: string | number | string[] | number[] | undefined; // undefined of non required(optional / default)
 }

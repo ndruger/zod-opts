@@ -4,7 +4,7 @@ import { isNumericValue } from "./internal_parser";
 import { debugLog } from "./logger";
 import type {
   FormatValidOption,
-  FormatValidPositionalArg,
+  FormatValidPositionalArgument,
   InternalOption,
   InternalPositionalArgument,
 } from "./type";
@@ -88,7 +88,7 @@ export function validateMultipleCommands(
   commandName: string
 ): {
   options: FormatValidOption[];
-  positionalArgs: FormatValidPositionalArg[];
+  positionalArgs: FormatValidPositionalArgument[];
 } {
   try {
     return validate(parsed, options, positionalArgs);
@@ -106,7 +106,7 @@ export function validate(
   positionalArgs: InternalPositionalArgument[]
 ): {
   options: FormatValidOption[];
-  positionalArgs: FormatValidPositionalArg[];
+  positionalArgs: FormatValidPositionalArgument[];
 } {
   const optionMap = new Map(options.map((option) => [option.name, option]));
   const validOptionValues: Array<

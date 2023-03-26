@@ -39,7 +39,7 @@ describe("generateOptionsText()", () => {
         type: "number",
         name: "name",
         required: true,
-        argName: "argNameA",
+        argumentName: "argumentNameA",
       },
     ];
     const result = generateOptionsText(options);
@@ -47,7 +47,7 @@ describe("generateOptionsText()", () => {
   -a, --foo                    foo description (default: true)            
   -a, --aaaaaaaaaaaa <string>  (default: "default")                       
   -a, --num <number>           description2 (default: 100)                
-      --name <argNameA>                                         [required]`);
+      --name <argumentNameA>                                         [required]`);
   });
 });
 

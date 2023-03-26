@@ -166,7 +166,7 @@ export function optionToInternal(option: Option, name: string): InternalOption {
     type: internalType,
     name,
     alias: option.alias,
-    argName: option.argName,
+    argumentName: option.argumentName,
     description,
     required: isRequired(def),
     defaultValue,
