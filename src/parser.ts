@@ -138,7 +138,7 @@ export class Parser<
 
   showHelp(): void {
     const help = this.getHelp();
-    console.log(help);
+    console.log(help); // eslint-disable-line no-console
   }
 
   getHelp(): string {

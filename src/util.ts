@@ -24,12 +24,12 @@ export function errorExit(
 ): never {
   const { type, help, exitCode } = parseResult;
   if (type === "help") {
-    console.log(help);
+    console.log(help); // eslint-disable-line no-console
   } else if (type === "version") {
-    console.log(version);
+    console.log(version); // eslint-disable-line no-console
   } else {
-    console.error(`${parseResult.error.message}\n`);
-    console.error(help);
+    console.error(`${parseResult.error.message}\n`); // eslint-disable-line no-console
+    console.error(help); // eslint-disable-line no-console
   }
   process.exit(exitCode);
 }

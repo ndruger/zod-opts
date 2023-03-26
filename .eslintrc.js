@@ -19,10 +19,11 @@ module.exports = {
   },
   rules: {
     strict: ["error", "never"],
-    "@typescript-eslint/array-type": "error",
-    "@typescript-eslint/no-explicit-any": "error",
+    "no-console": "error",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
+    "@typescript-eslint/array-type": "error",
+    "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/ban-types": [
       "error",
       {

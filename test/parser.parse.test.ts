@@ -919,7 +919,6 @@ describe("complex", () => {
             opt2: { type: z.number() },
           })
           .validation((parsed) => {
-            console.log("custom validation");
             if (parsed.opt1 + parsed.opt2 <= 12) {
               return "opt1 + opt2 must be greater than 12";
             }

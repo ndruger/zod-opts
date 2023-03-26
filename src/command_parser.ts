@@ -102,7 +102,7 @@ export class CommandParser {
 
   showHelp(commandName?: string): void {
     const help = this.getHelp(commandName);
-    console.log(help);
+    console.log(help); // eslint-disable-line no-console
   }
 
   getHelp(commandName?: string): string {
