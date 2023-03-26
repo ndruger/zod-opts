@@ -47,7 +47,7 @@ describe("generateOptionsText()", () => {
   -a, --foo                    foo description (default: true)            
   -a, --aaaaaaaaaaaa <string>  (default: "default")                       
   -a, --num <number>           description2 (default: 100)                
-      --name <argumentNameA>                                         [required]`);
+      --name <argumentNameA>                                    [required]`);
   });
 });
 
