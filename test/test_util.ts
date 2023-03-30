@@ -55,6 +55,7 @@ export function createInternalOption({
   description,
   defaultValue,
   enumValues,
+  isArray = false,
 }: {
   type?: BaseType;
   name?: string;
@@ -63,8 +64,18 @@ export function createInternalOption({
   description?: string;
   defaultValue?: number | string | boolean;
   enumValues?: string[];
+  isArray?: boolean;
 }): InternalOption {
-  return { type, name, alias, required, description, defaultValue, enumValues };
+  return {
+    type,
+    name,
+    alias,
+    required,
+    description,
+    defaultValue,
+    enumValues,
+    isArray,
+  };
 }
 
 export function createInternalPositionalArgument({

@@ -119,8 +119,9 @@ export interface InternalOption {
   alias?: string; // ex. o, ab
   argumentName?: string;
   description?: string;
-  defaultValue?: string | number | boolean;
   required: boolean;
+  defaultValue?: string | number | string[] | number[] | boolean;
+  isArray: boolean;
   enumValues?: string[];
 }
 
@@ -155,7 +156,7 @@ export type ValidateCallback<T extends ZodRawShape> = (
 
 export interface FormatValidOption {
   name: string;
-  value: string | number | boolean | undefined; // undefined of non required(optional / default)
+  value: string | number | boolean | string[] | number[] | undefined; // undefined of non required(optional / default)
 }
 
 export interface FormatValidPositionalArgument {

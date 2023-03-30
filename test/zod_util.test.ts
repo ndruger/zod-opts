@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 import type { Option, PositionalArgument } from "../src/type";
-import { optionToInternal, positionalArgToInternal } from "../src/zod_util";
+import {
+  optionToInternal,
+  positionalArgumentToInternal,
+} from "../src/zod_util";
 
 export function createOption({
   type = z.string(),
@@ -48,6 +51,7 @@ describe("optionToInternal()", () => {
         alias: "a",
         description: "description1",
         required: true,
+        isArray: false,
       });
     });
 
@@ -66,6 +70,7 @@ describe("optionToInternal()", () => {
         description: "description1",
         required: false,
         defaultValue: "default",
+        isArray: false,
       });
     });
     test("optional", () => {
@@ -82,6 +87,7 @@ describe("optionToInternal()", () => {
         alias: "a",
         description: "description1",
         required: false,
+        isArray: false,
       });
     });
     test("optional with default", () => {
@@ -98,6 +104,7 @@ describe("optionToInternal()", () => {
         alias: "a",
         description: "description1",
         required: false, // should be false, same with z.string().default("default").optional().safeParse(undefined)
+        isArray: false,
       });
       expect(
         optionToInternal(
@@ -112,6 +119,7 @@ describe("optionToInternal()", () => {
         alias: "a",
         description: "description1",
         required: false, // should be false, same with z.optional(z.string().default("default")).safeParse(undefined)
+        isArray: false,
       });
       expect(
         optionToInternal(
@@ -127,6 +135,7 @@ describe("optionToInternal()", () => {
         description: "description1",
         required: false, // should be false, same with z.string().optional().default("default").safeParse(undefined)
         defaultValue: "default",
+        isArray: false,
       });
     });
 
@@ -144,6 +153,7 @@ describe("optionToInternal()", () => {
         alias: "a",
         description: "description1",
         required: true,
+        isArray: false,
       });
     });
 
@@ -165,6 +175,7 @@ describe("optionToInternal()", () => {
         description: "description1",
         required: false,
         defaultValue: "default",
+        isArray: false,
       });
     });
 
@@ -185,6 +196,7 @@ describe("optionToInternal()", () => {
         alias: "a",
         description: "description1",
         required: false,
+        isArray: false,
       });
     });
   });
@@ -205,6 +217,7 @@ describe("optionToInternal()", () => {
         description: "description1",
         required: true,
         defaultValue: undefined,
+        isArray: false,
       });
     });
     test("default", () => {
@@ -222,6 +235,7 @@ describe("optionToInternal()", () => {
         description: "description1",
         required: false,
         defaultValue: 10,
+        isArray: false,
       });
     });
   });
@@ -242,6 +256,7 @@ describe("optionToInternal()", () => {
         description: "description1",
         required: true,
         defaultValue: undefined,
+        isArray: false,
       });
     });
   });
@@ -263,6 +278,7 @@ describe("optionToInternal()", () => {
         required: true,
         defaultValue: undefined,
         enumValues: ["a", "b", "c"],
+        isArray: false,
       });
     });
     test("default", () => {
@@ -281,6 +297,7 @@ describe("optionToInternal()", () => {
         required: false,
         defaultValue: "b",
         enumValues: ["a", "b", "c"],
+        isArray: false,
       });
     });
 
@@ -300,6 +317,7 @@ describe("optionToInternal()", () => {
         required: false,
         defaultValue: undefined,
         enumValues: ["a", "b", "c"],
+        isArray: false,
       });
     });
 
@@ -322,6 +340,7 @@ describe("optionToInternal()", () => {
         required: false,
         defaultValue: "b",
         enumValues: ["a", "b", "c"],
+        isArray: false,
       });
     });
   });
@@ -342,6 +361,7 @@ describe("optionToInternal()", () => {
         description: "description1",
         required: true,
         defaultValue: undefined,
+        isArray: false,
       });
     });
 
@@ -360,6 +380,7 @@ describe("optionToInternal()", () => {
         description: "description1",
         required: true,
         default: undefined,
+        isArray: false,
       });
     });
 
@@ -377,6 +398,7 @@ describe("optionToInternal()", () => {
         alias: "a",
         description: "description1",
         required: true,
+        isArray: false,
       });
     });
 
@@ -395,6 +417,7 @@ describe("optionToInternal()", () => {
         description: "description1",
         required: false,
         defaultValue: undefined,
+        isArray: false,
       });
     });
 
@@ -413,6 +436,7 @@ describe("optionToInternal()", () => {
         description: "description1",
         required: false,
         defaultValue: undefined,
+        isArray: false,
       });
     });
 
@@ -435,6 +459,7 @@ describe("optionToInternal()", () => {
         alias: "a",
         description: "description1",
         required: true,
+        isArray: false,
       });
     });
   });
@@ -477,11 +502,11 @@ describe("optionToInternal()", () => {
   });
 });
 
-describe("positionalArgToInternal()", () => {
+describe("positionalArgumentToInternal()", () => {
   describe("array", () => {
     test("common", () => {
       expect(
-        positionalArgToInternal({
+        positionalArgumentToInternal({
           name: "name1",
           type: z.array(z.string()).describe("zod_description"),
           description: "description1",

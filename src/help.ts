@@ -11,6 +11,7 @@ function getBuiltInOptions(version?: string): InternalOption[] {
     required: false,
     alias: "h",
     description: "Show help",
+    isArray: false,
   };
 
   const versionCommand: InternalOption = {
@@ -19,6 +20,7 @@ function getBuiltInOptions(version?: string): InternalOption[] {
     required: false,
     alias: "V",
     description: "Show version",
+    isArray: false,
   };
 
   return version === undefined ? [helpCommand] : [helpCommand, versionCommand];
@@ -74,11 +76,13 @@ function generateDefaultString(
 }
 
 function generateNameAndArgString(option: InternalOption): string {
+  const arrayStr = option.isArray ? " ..." : "";
+
   switch (option.type) {
     case "string":
-      return `--${option.name} <${option.argumentName ?? "string"}>`;
+      return `--${option.name} <${option.argumentName ?? "string"}${arrayStr}>`;
     case "number":
-      return `--${option.name} <${option.argumentName ?? "number"}>`;
+      return `--${option.name} <${option.argumentName ?? "number"}${arrayStr}>`;
     case "boolean":
       return `--${option.name}`;
   }

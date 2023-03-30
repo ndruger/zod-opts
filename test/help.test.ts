@@ -40,6 +40,7 @@ describe("generateOptionsText()", () => {
         name: "name",
         required: true,
         argumentName: "argumentNameA",
+        isArray: false,
       },
     ];
     const result = generateOptionsText(options);
@@ -148,6 +149,7 @@ describe("generateGlobalHelp()", () => {
         type: "number",
         name: "name1",
         required: true,
+        isArray: false,
       },
     ];
 

@@ -6,13 +6,13 @@ import type {
   InternalPositionalArgument,
 } from "./type";
 
-interface Candidate {
+export interface Candidate {
   name: string;
-  value: string | undefined;
+  value: string | string[] | undefined;
   isNegative: boolean;
 }
 
-interface PositionalCandidate {
+export interface PositionalCandidate {
   name: string;
   value: string | string[];
 }
@@ -50,17 +50,17 @@ export function findOptionByPrefixedName(
   return undefined;
 }
 
-type ValidateOptionArgumentResult =
-  | { ok: true; value: "optionRequiresValue" | "noValue" }
+type ValidateOptionArgumentsResult =
+  | { ok: true; value: string | string[] | undefined; shift: number }
   | { ok: false; message: string };
 
-function validateOptionArgument(
+function validateOptionArguments(
   option: InternalOption,
   isNegative: boolean,
-  value: string | undefined,
+  optionArgCandidates: string[],
   isForcedValue: boolean
-): ValidateOptionArgumentResult {
-  if (optionRequiresValue(option) && value === undefined) {
+): ValidateOptionArgumentsResult {
+  if (optionRequiresValue(option) && optionArgCandidates.length === 0) {
     // ex. --foo and foo is string
     return { ok: false, message: `Option '${option.name}' needs value` };
   }
@@ -79,9 +79,16 @@ function validateOptionArgument(
     };
   }
 
+  const [value, shift] = !optionRequiresValue(option)
+    ? [undefined, 0]
+    : option.isArray
+    ? [optionArgCandidates, optionArgCandidates.length]
+    : [optionArgCandidates[0], 1];
+
   return {
     ok: true,
-    value: optionRequiresValue(option) ? "optionRequiresValue" : "noValue",
+    value,
+    shift,
   };
 }
 
@@ -92,7 +99,7 @@ function removeOptionPrefix(prefixedName: string): string {
 function parseLongNameOptionArgument(
   options: InternalOption[],
   arg: string,
-  next: string | undefined
+  optionArgCandidates: string[]
 ): { candidate: Candidate; shift: number } {
   const match = arg.match(/^(?<prefixedName>[^=]+)(=(?<forcedValue>.*))?$/); // forcedValue may be empty string
 
@@ -108,10 +115,10 @@ function parseLongNameOptionArgument(
       );
     }
     const [option, isNegative] = result;
-    const validateResult = validateOptionArgument(
+    const validateResult = validateOptionArguments(
       option,
       isNegative,
-      forcedValue,
+      [forcedValue],
       true
     );
     if (!validateResult.ok) {
@@ -120,7 +127,7 @@ function parseLongNameOptionArgument(
     return {
       candidate: {
         name: option.name,
-        value: forcedValue,
+        value: validateResult.value,
         isNegative,
       },
       shift: 1,
@@ -133,10 +140,10 @@ function parseLongNameOptionArgument(
       );
     }
     const [option, isNegative] = result;
-    const validateResult = validateOptionArgument(
+    const validateResult = validateOptionArguments(
       option,
       isNegative,
-      next,
+      optionArgCandidates,
       false
     );
     if (!validateResult.ok) {
@@ -145,11 +152,10 @@ function parseLongNameOptionArgument(
     return {
       candidate: {
         name: option.name,
-        value:
-          validateResult.value === "optionRequiresValue" ? next : undefined,
+        value: validateResult.value,
         isNegative,
       },
-      shift: validateResult.value === "optionRequiresValue" ? 2 : 1,
+      shift: validateResult.shift + 1,
     };
   }
 }
@@ -157,18 +163,20 @@ function parseLongNameOptionArgument(
 // ex. -abc => -a, -b, -c: ok
 // ex. -abc 10 => -a, -b, -c=10: ok
 // ex. -abc 10 => -a, -b, -c, 10(next):ok
+// ex. -abc 10 11 => -a, -b, -c=[10, 11]: ok
+// ex. -abc 10 11 => -a, -b, -c, [10, 11](next):ok
 // ex. -abc10 => -abc=10: ng
 // ex. -a10 => -a=10: ok
 // ex. -ab10 => -a, -b=10: ng
 function parseShortNameMultipleOptionArgument(
   options: InternalOption[],
   arg: string,
-  next: string | undefined
+  optionArgCandidates: string[]
 ): { candidates: Candidate[]; shift: number } {
   let shift = 1;
   const candidates: Candidate[] = [];
 
-  debugLog("parseShortNameMultipleOptionArgument", arg, next);
+  debugLog("parseShortNameMultipleOptionArgument", arg, optionArgCandidates);
 
   const text = arg.slice(1);
   for (let i = 0; i < text.length; i++) {
@@ -180,13 +188,22 @@ function parseShortNameMultipleOptionArgument(
     const [option] = result;
     if (optionRequiresValue(option)) {
       const isLast = text[i + 1] === undefined;
-      if (isLast && next !== undefined) {
-        candidates.push({
-          name: option.name,
-          value: next,
-          isNegative: false,
-        });
-        shift = 2;
+      if (isLast && optionArgCandidates.length !== 0) {
+        if (option.isArray) {
+          candidates.push({
+            name: option.name,
+            value: optionArgCandidates,
+            isNegative: false,
+          });
+          shift = optionArgCandidates.length + 1;
+        } else {
+          candidates.push({
+            name: option.name,
+            value: optionArgCandidates[0],
+            isNegative: false,
+          });
+          shift = 2;
+        }
         break;
       }
       const isFirst = i === 0;
@@ -215,7 +232,7 @@ function parseShortNameMultipleOptionArgument(
 function parseShortNameOptionArgument(
   options: InternalOption[],
   arg: string,
-  next: string | undefined
+  optionArgCandidates: string[]
 ): { candidates: Candidate[]; shift: number } {
   const match = arg.match(/^(?<prefixedName>[^=]+)$/);
 
@@ -231,10 +248,19 @@ function parseShortNameOptionArgument(
   // If findOptionByPrefixedName() returns matched option, it is treated as single option even if the validation fails.
   const result = findOptionByPrefixedName(options, prefixedName);
   if (result === undefined) {
-    return parseShortNameMultipleOptionArgument(options, prefixedName, next);
+    return parseShortNameMultipleOptionArgument(
+      options,
+      prefixedName,
+      optionArgCandidates
+    );
   }
   const [option] = result;
-  const validateResult = validateOptionArgument(option, false, next, false);
+  const validateResult = validateOptionArguments(
+    option,
+    false,
+    optionArgCandidates,
+    false
+  );
   if (!validateResult.ok) {
     throw new ParseError(`${validateResult.message}: ${option.name}`);
   }
@@ -242,32 +268,31 @@ function parseShortNameOptionArgument(
     candidates: [
       {
         name: option.name,
-        value:
-          validateResult.value === "optionRequiresValue" ? next : undefined,
+        value: validateResult.value,
         isNegative: false,
       },
     ],
-    shift: validateResult.value === "optionRequiresValue" ? 2 : 1,
+    shift: validateResult.shift + 1,
   };
 }
 
 function parseOptionArgument(
   options: InternalOption[],
   arg: string,
-  next: string | undefined
+  optionArgCandidates: string[]
 ): { candidates: Candidate[]; shift: number } {
   if (arg.startsWith("--")) {
     const { candidate, shift } = parseLongNameOptionArgument(
       options,
       arg,
-      next
+      optionArgCandidates
     );
     return {
       candidates: [candidate],
       shift,
     };
   }
-  return parseShortNameOptionArgument(options, arg, next);
+  return parseShortNameOptionArgument(options, arg, optionArgCandidates);
 }
 
 export function pickPositionalArguments(
@@ -322,14 +347,15 @@ export type CommandParsed = Parsed & {
   commandName: string | undefined;
 };
 
-function pickNextNonOption(
-  arg: string | undefined,
+function pickNextNonOptionArgumentCandidates(
+  targets: string[],
   options: InternalOption[]
-): string | undefined {
-  if (arg === undefined || likesOptionArg(arg, options)) {
-    return undefined;
+): string[] {
+  const foundIndex = targets.findIndex((arg) => likesOptionArg(arg, options));
+  if (foundIndex === -1) {
+    return targets;
   }
-  return arg;
+  return targets.slice(0, foundIndex);
 }
 
 export function likesOptionArg(
@@ -384,9 +410,12 @@ function processOption(
   options: InternalOption[]
 ): State {
   const arg = args[state.index];
-  const next = pickNextNonOption(args[state.index + 1], options);
+  const picked = pickNextNonOptionArgumentCandidates(
+    args.slice(state.index + 1),
+    options
+  );
 
-  const { candidates, shift } = parseOptionArgument(options, arg, next);
+  const { candidates, shift } = parseOptionArgument(options, arg, picked);
   return {
     ...state,
     index: state.index + shift,

@@ -1,5 +1,5 @@
 import { ParseError } from "./error";
-import type { Parsed } from "./internal_parser";
+import type { Candidate, Parsed, PositionalCandidate } from "./internal_parser";
 import { isNumericValue } from "./internal_parser";
 import { debugLog } from "./logger";
 import type {
@@ -11,7 +11,7 @@ import type {
 import * as util from "./util";
 
 interface ValidValue {
-  value: string | number | boolean;
+  value: string | number | string[] | number[] | boolean;
 }
 
 interface ValidPositionalValue {
@@ -20,9 +20,36 @@ interface ValidPositionalValue {
 
 export function validateCandidateValue(
   option: InternalOption,
-  value: string | undefined,
+  value: string | string[] | undefined,
   isNegative: boolean
 ): ValidValue | undefined {
+  if (option.isArray) {
+    if (value === undefined || !Array.isArray(value)) {
+      return undefined;
+    }
+    switch (option.type) {
+      case "string":
+        // !isNegative is always true
+        if (value.length === 0) {
+          return undefined;
+        }
+        return { value };
+      case "number":
+        // !isNegative is always true
+        if (
+          value === undefined ||
+          value.some((item) => !isNumericValue(item))
+        ) {
+          return undefined;
+        }
+        return { value: value.map((item) => parseFloat(item)) };
+    }
+  }
+
+  if (Array.isArray(value)) {
+    return undefined;
+  }
+
   switch (option.type) {
     case "string":
       // !isNegative is always true
@@ -100,18 +127,14 @@ export function validateMultipleCommands(
   }
 }
 
-export function validate(
-  parsed: Parsed,
-  options: InternalOption[],
-  positionalArgs: InternalPositionalArgument[]
-): {
-  options: FormatValidOption[];
-  positionalArgs: FormatValidPositionalArgument[];
-} {
+function validateOptions(
+  candidates: Candidate[],
+  options: InternalOption[]
+): FormatValidOption[] {
   const optionMap = new Map(options.map((option) => [option.name, option]));
-  const validOptionValues: Array<
-    [string, string | number | boolean | undefined]
-  > = parsed.candidates.map((candidate) => {
+  const validValues: Array<
+    [string, string | number | boolean | string[] | number[] | undefined]
+  > = candidates.map((candidate) => {
     const option = optionMap.get(candidate.name) as InternalOption;
     const validated = validateCandidateValue(
       option,
@@ -126,36 +149,67 @@ export function validate(
     return [candidate.name, validated.value];
   });
 
-  const positionalArgMap = new Map(
-    positionalArgs.map((option) => [option.name, option])
-  );
-  const validPositionalArgValues: Array<
-    [string, string | number | string[] | number[]]
-  > = parsed.positionalCandidates.map((candidate) => {
-    const name = candidate.name;
-    const validated = validatePositionalCandidateValue(
-      positionalArgMap.get(name) as InternalPositionalArgument,
-      candidate.value
-    );
-    if (validated === undefined) {
-      throw new ParseError(`Invalid positional argument value: ${name}`);
+  debugLog("validateOptions", { validValues });
+
+  const arrayTypeMerged: Array<
+    [string, string | number | boolean | string[] | number[] | undefined]
+  > = options.flatMap((opt) => {
+    const nameValues = validValues.filter(([name]) => name === opt.name);
+    if (!opt.isArray) {
+      return nameValues;
     }
-    return [candidate.name, validated.value];
+    const values = nameValues.map(([, value]) => value);
+    if (values.length === 0) {
+      return [];
+    }
+    return [[opt.name, values.flat()]] as Array<[string, string[] | number[]]>;
   });
 
-  debugLog("validate", { validOptionValues, validPositionalArgValues });
-
   const duplicateOptionNames = util.findDuplicateValues(
-    validOptionValues.map(([name]) => name)
+    arrayTypeMerged.map(([name]) => name)
   );
   if (duplicateOptionNames.length !== 0) {
     throw new ParseError(
       `Duplicated option: ${duplicateOptionNames.join(", ")}`
     );
   }
+  const validValueSet = new Map(arrayTypeMerged);
+
+  return options.map((opt) => {
+    if (!validValueSet.has(opt.name)) {
+      if (!opt.required) {
+        return { name: opt.name, value: undefined };
+      }
+      throw new ParseError(`Required option is missing: ${opt.name}`);
+    }
+    return { name: opt.name, value: validValueSet.get(opt.name) };
+  });
+}
+
+function validatePositionalArguments(
+  candidates: PositionalCandidate[],
+  positionalArgs: InternalPositionalArgument[]
+): FormatValidPositionalArgument[] {
+  const positionalArgMap = new Map(
+    positionalArgs.map((option) => [option.name, option])
+  );
+  const validValues: Array<[string, string | number | string[] | number[]]> =
+    candidates.map((candidate) => {
+      const name = candidate.name;
+      const validated = validatePositionalCandidateValue(
+        positionalArgMap.get(name) as InternalPositionalArgument,
+        candidate.value
+      );
+      if (validated === undefined) {
+        throw new ParseError(`Invalid positional argument value: ${name}`);
+      }
+      return [candidate.name, validated.value];
+    });
+
+  debugLog("validatePositionalArguments", { validValues });
 
   const duplicatedPositionalArgNames = util.findDuplicateValues(
-    validPositionalArgValues.map(([name]) => name)
+    validValues.map(([name]) => name)
   );
   if (duplicatedPositionalArgNames.length !== 0) {
     throw new ParseError(
@@ -165,35 +219,38 @@ export function validate(
     );
   }
 
-  const validOptionValueSet = new Map(validOptionValues);
+  const validValueSet = new Map(validValues);
 
-  const validPositionalArgValueSet = new Map(validPositionalArgValues);
-
-  const optionsResult = options.map((opt) => {
-    if (!validOptionValueSet.has(opt.name)) {
-      if (!opt.required) {
-        return { name: opt.name, value: undefined };
-      }
-      throw new ParseError(`Required option is missing: ${opt.name}`);
-    }
-    return { name: opt.name, value: validOptionValueSet.get(opt.name) };
-  });
-
-  const positionalArgsResult = positionalArgs.map((opt) => {
-    if (!validPositionalArgValueSet.has(opt.name)) {
+  return positionalArgs.map((opt) => {
+    if (!validValueSet.has(opt.name)) {
       if (!opt.required) {
         return { name: opt.name, value: undefined };
       }
     }
 
-    if (!validPositionalArgValueSet.has(opt.name)) {
-      throw new ParseError(`Required option is missing: ${opt.name}`);
+    if (!validValueSet.has(opt.name)) {
+      throw new ParseError(`Required argument is missing: ${opt.name}`);
     }
     return {
       name: opt.name,
-      value: validPositionalArgValueSet.get(opt.name),
+      value: validValueSet.get(opt.name),
     };
   });
+}
 
-  return { options: optionsResult, positionalArgs: positionalArgsResult };
+export function validate(
+  parsed: Parsed,
+  options: InternalOption[],
+  positionalArgs: InternalPositionalArgument[]
+): {
+  options: FormatValidOption[];
+  positionalArgs: FormatValidPositionalArgument[];
+} {
+  return {
+    options: validateOptions(parsed.candidates, options),
+    positionalArgs: validatePositionalArguments(
+      parsed.positionalCandidates,
+      positionalArgs
+    ),
+  };
 }
