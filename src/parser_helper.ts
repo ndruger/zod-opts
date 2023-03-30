@@ -23,7 +23,7 @@ export function generateInternalOptions(options: Options): InternalOption[] {
 export function generateInternalPositionalArguments(
   positionalArgs: PositionalArguments
 ): InternalPositionalArgument[] {
-  return positionalArgs.map(zodUtil.positionalArgToInternal);
+  return positionalArgs.map(zodUtil.positionalArgumentToInternal);
 }
 
 export function generateZodShape(

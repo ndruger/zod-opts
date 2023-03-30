@@ -19,6 +19,8 @@ A library that simplifies the process of parsing and validating command-line arg
         - [negatable boolean](#negatable-boolean)
       - [enum types](#enum-types)
       - [array types](#array-types)
+        - [array option](#array-option)
+        - [array positional arguments](#array-positional-arguments)
     - [Custom validation](#custom-validation)
     - [Variadic arguments](#variadic-arguments)
   - [Commands](#commands)
@@ -270,10 +272,52 @@ console.log(parsed);
 
 #### array types
 
-- .options() DOES NOT support array type now(will be supported soon...)
+- .options() supports array type
 - .args() supports array type
 
-File: [array.ts](./example/array.ts)
+##### array option
+
+CAUTION: `program --opt opt_arg1 opt_arg2 pos_arg` will be treated as `opt=['opt_arg1' 'opt_arg2' 'pos_arg']`.
+In this case, the user should use `program --opt opt_arg1 opt_arg2 -- pos_arg`.
+
+File: [array_option.ts](./example/array_option.ts)
+
+```ts
+const parsed = parser()
+  .options({
+    opt: {
+      type: z.array(z.string()), // required arg. type is string[]
+      //   type: z.array(z.string()).default([]), // optional arg. type is string[] and default is []
+    },
+  })
+  .parse();
+
+// parsed is inferred as below:
+// const parsed: {
+//   opt: string[];
+// };
+console.log(parsed);
+```
+
+```bash
+# Valid options
+$ node array_option.js --opt str1 str2
+{ opt: [ 'str1', 'str2' ] }
+
+# Invalid options (empty array is not permitted. use `.default([])` instead).
+$ node array_option.js --opt
+Option 'opt' needs value: opt
+
+Usage: array_option.js [options]
+
+Options:
+  -h, --help              Show help
+      --opt <string ...>             [required]
+```
+
+##### array positional arguments
+
+File: [array_argument.ts](./example/array_argument.ts)
 
 ```ts
 const parsed = parser()
@@ -295,14 +339,14 @@ console.log(parsed);
 
 ```bash
 # Valid options
-$ node array.js str1 str2
+$ node array_argument.js str1 str2
 { pos: [ 'str1', 'str2' ] }
 
 # Invalid options (empty array is not permitted. use `.default([])` instead).
-$ node array.js
-Required option is missing: pos
+$ node array_argument.js
+Required argument is missing: pos
 
-Usage: array.js [options] <pos ...>
+Usage: array_argument.js [options] <pos ...>
 
 Arguments:
   pos    [required]

@@ -108,11 +108,6 @@ export function toInternalType(
     case ZodFirstPartyTypeKind.ZodUnion:
       return toInternalTypeForZodUnion(solvedDef);
     case ZodFirstPartyTypeKind.ZodArray:
-      if (!isPositional) {
-        throw new Error(
-          `Unsupported zod type (options): ${solvedDef.typeName}`
-        );
-      }
       return toInternalTypeForZodArray(solvedDef);
     default:
       throw new Error(`Unsupported zod type: ${solvedDef.typeName}`);
@@ -155,7 +150,12 @@ export function optionToInternal(option: Option, name: string): InternalOption {
   // sequence of this is important. It changes exception.
   const zodType = option.type;
   const def: ZodDef = zodType._def;
-  const defaultValue = getDefaultValue(def) as string | number | undefined;
+  const defaultValue = getDefaultValue(def) as
+    | string
+    | number
+    | string[]
+    | number[]
+    | undefined;
   const internalType = toInternalType(def);
   const description =
     option.description ??
@@ -169,22 +169,23 @@ export function optionToInternal(option: Option, name: string): InternalOption {
     argumentName: option.argumentName,
     description,
     required: isRequired(def),
+    isArray: def.typeName === "ZodArray",
     defaultValue,
     enumValues,
   };
 }
 
-export function positionalArgToInternal(
+export function positionalArgumentToInternal(
   option: PositionalArgument
 ): InternalPositionalArgument {
   // sequence of this is important. It changes exception.
   const zodType = option.type;
   const def: ZodDef = zodType._def;
   const defaultValue = getDefaultValue(def) as
-    | string[]
-    | number[]
     | string
     | number
+    | string[]
+    | number[]
     | undefined;
   const internalType = toInternalType(def, true) as "string" | "number";
   const description =
