@@ -6,7 +6,7 @@ const parsed = parser()
   .args([
     {
       name: "pos",
-      type: z.array(z.string()).default([]), // required arg. type is string[]
+      type: z.array(z.string()).default([]), // optional arg. type is string[]
     },
   ])
   .parse();

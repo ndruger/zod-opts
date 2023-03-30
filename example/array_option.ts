@@ -5,7 +5,7 @@ import { parser } from "../src/index";
 const parsed = parser()
   .options({
     opt: {
-      type: z.array(z.string()), // required arg. type is string[]
+      type: z.array(z.string()), // required option. type is string[]
       //   type: z.array(z.string()).default([]), // optional arg. type is string[] and default is []
     },
   })
