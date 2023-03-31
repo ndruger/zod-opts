@@ -143,40 +143,39 @@ export class CommandParser {
       scriptName: this._scriptName(),
     });
     if (internalResult.type !== "match") {
-      if (this._handler !== undefined) {
-        this._handler(internalResult);
-      }
-      util.errorExit(internalResult, this._version);
+      this._handleAndExit(internalResult);
     }
     const usedCommandIndex = internalCommands.findIndex(
       (command) => internalResult.commandName === command.name
     );
     const { shape, action, validation } = commands[usedCommandIndex];
 
-    const zodValidationResult = this._validateByZod(shape, internalResult);
-    if (zodValidationResult.type !== "match") {
-      if (this._handler !== undefined) {
-        this._handler(zodValidationResult);
-      }
-      util.errorExit(zodValidationResult, this._version);
+    const zodParseResult = this._zodParse(internalResult, shape);
+    if (!zodParseResult.success) {
+      this._handleAndExit(zodParseResult.error);
     }
-    if (validation !== undefined) {
-      const customValidationResult = this._validateByCustomValidation(
-        validation,
-        zodValidationResult
-      );
-      if (customValidationResult.type !== "match") {
-        if (this._handler !== undefined) {
-          this._handler(customValidationResult);
-        }
-        util.errorExit(customValidationResult, this._version);
-      }
+    const validationError = this._validateByCustomValidation(
+      validation,
+      zodParseResult.value,
+      internalResult.help
+    );
+    if (validationError !== undefined) {
+      this._handleAndExit(validationError);
     }
 
     if (this._handler !== undefined) {
-      this._handler(zodValidationResult);
+      this._handler({ ...internalResult, parsed: zodParseResult.value });
     }
-    action(zodValidationResult.parsed);
+    action(zodParseResult.value);
+  }
+
+  private _handleAndExit(
+    handlerArg: ParseResultError | ParseResultHelp | ParseResultVersion
+  ): never {
+    if (this._handler != null) {
+      this._handler(handlerArg);
+    }
+    util.errorExit(handlerArg, this._version);
   }
 
   private _scriptName(): string {
@@ -330,34 +329,41 @@ export class CommandParser {
     }
   }
 
-  private _validateByZod(
-    shape: ZodRawShape,
-    prevResult: ParseResultMatch<object>
-  ): ParseResultMatch<ZodRawShape> | ParseResultError {
+  private _zodParse<T>(
+    prevResult: ParseResultMatch<T>,
+    shape: ZodRawShape
+  ): { success: true; value: T } | { success: false; error: ParseResultError } {
     const result = z.object(shape).safeParse(prevResult.parsed);
     if (!result.success) {
       const firstError: z.ZodIssue = result.error.errors[0];
       return {
-        type: "error",
-        error: new ParseError(
-          `${firstError.message}: ${firstError.path.join("")}`,
-          result.error
-        ),
-        help: prevResult.help,
-        exitCode: 1,
-        commandName: prevResult.commandName,
+        success: false,
+        error: {
+          type: "error",
+          error: new ParseError(
+            `${firstError.message}: ${firstError.path.join("")}`,
+            result.error
+          ),
+          help: prevResult.help,
+          exitCode: 1,
+          commandName: prevResult.commandName,
+        },
       };
     }
-    return { ...prevResult, parsed: result.data };
+    return { success: true, value: result.data as T };
   }
 
-  private _validateByCustomValidation(
-    validation: ValidateCallback<ZodRawShape>,
-    prevResult: ParseResultMatch<ZodRawShape>
-  ): ParseResultMatch<ZodRawShape> | ParseResultError {
+  private _validateByCustomValidation<T extends object>(
+    validation: ValidateCallback<ZodRawShape> | undefined,
+    value: T,
+    help: string
+  ): ParseResultError | undefined {
+    if (validation === undefined) {
+      return undefined;
+    }
     const validateResult = (() => {
       try {
-        return validation(prevResult.parsed);
+        return validation(value);
       } catch (e) {
         if (e instanceof Error) {
           return e.message;
@@ -365,14 +371,13 @@ export class CommandParser {
         throw e;
       }
     })();
-    if (validateResult === true) {
-      return prevResult;
+    if (validateResult !== true) {
+      return {
+        type: "error",
+        error: new ParseError(validateResult),
+        help,
+        exitCode: 1,
+      };
     }
-    return {
-      type: "error",
-      error: new ParseError(validateResult),
-      help: prevResult.help,
-      exitCode: 1,
-    };
   }
 }

@@ -155,16 +155,17 @@ export class Parser<
     });
   }
 
-  parse(
-    args?: string[]
-  ): z.infer<ZodObject<GenerateZodShape<TOptions, TPositionalArguments>>> {
+  parse<
+    T extends z.infer<
+      ZodObject<GenerateZodShape<TOptions, TPositionalArguments>>
+    >
+  >(args?: string[]): T {
     const validArgs = args !== undefined ? args : process.argv.slice(2);
 
     const {
       _options: options,
       _positionalArgs: positionalArgs,
       _handler: handler,
-      _validation: validation,
     } = this;
 
     // Check support of options and positionalArgs before parsing args
@@ -173,7 +174,7 @@ export class Parser<
       positionalArgs
     ) as GenerateZodShape<TOptions, TPositionalArguments>;
 
-    const handlerArg = helper.createInternalParserAndParse({
+    const internalResult = helper.createInternalParserAndParse({
       options,
       positionalArgs,
       args: validArgs,
@@ -181,62 +182,88 @@ export class Parser<
       description: this._description,
       version: this._version,
     });
-    if (
-      handlerArg.type === "error" ||
-      handlerArg.type === "help" ||
-      handlerArg.type === "version"
-    ) {
-      if (handler != null) {
-        handler(handlerArg);
-      }
-      util.errorExit(handlerArg, this._version);
+    if (internalResult.type !== "match") {
+      this._handleAndExit(internalResult);
     }
 
-    const result = z.object(shape).safeParse(handlerArg.parsed);
-    if (!result.success) {
-      const firstError: z.ZodIssue = result.error.errors[0];
-      const handlerArg2: ParseResultError = {
-        type: "error",
-        error: new ParseError(
-          `${firstError.message}: ${firstError.path.join("")}`,
-          result.error
-        ),
-        help: handlerArg.help,
-        exitCode: 1,
-      };
-      if (handler != null) {
-        handler(handlerArg2);
-      }
-      util.errorExit(handlerArg2, this._version);
+    const zodParseResult = this._zodParse(
+      internalResult as ParseResultMatch<T>,
+      shape
+    );
+    if (!zodParseResult.success) {
+      this._handleAndExit(zodParseResult.error);
     }
-    if (validation != null) {
-      const validationResult = (() => {
-        try {
-          return validation(result.data);
-        } catch (e) {
-          if (e instanceof Error) {
-            return e.message;
-          }
-          throw e;
-        }
-      })();
-      if (validationResult !== true) {
-        const handlerArg2: ParseResultError = {
-          type: "error",
-          error: new ParseError(validationResult),
-          help: handlerArg.help,
-          exitCode: 1,
-        };
-        if (handler != null) {
-          handler(handlerArg2);
-        }
-        util.errorExit(handlerArg2, this._version);
-      }
+
+    const validationError = this._validateByCustomValidation(
+      zodParseResult.value,
+      internalResult.help
+    );
+    if (validationError !== undefined) {
+      this._handleAndExit(validationError);
     }
     if (handler != null) {
-      handler({ ...handlerArg, parsed: result.data });
+      handler({ ...internalResult, parsed: zodParseResult.value });
     }
-    return result.data;
+    return zodParseResult.value;
+  }
+
+  private _validateByCustomValidation<T extends object>(
+    value: T,
+    help: string
+  ): ParseResultError | undefined {
+    if (this._validation === undefined) {
+      return undefined;
+    }
+    const validationResult = (() => {
+      try {
+        return this._validation(value);
+      } catch (e) {
+        if (e instanceof Error) {
+          return e.message;
+        }
+        throw e;
+      }
+    })();
+    if (validationResult !== true) {
+      return {
+        type: "error",
+        error: new ParseError(validationResult),
+        help,
+        exitCode: 1,
+      };
+    }
+  }
+
+  private _zodParse<T>(
+    prevResult: ParseResultMatch<T>,
+    shape: z.ZodRawShape
+  ): { success: true; value: T } | { success: false; error: ParseResultError } {
+    const result = z.object(shape).safeParse(prevResult.parsed);
+    if (!result.success) {
+      const firstError: z.ZodIssue = result.error.errors[0];
+      return {
+        success: false,
+        error: {
+          type: "error",
+          error: new ParseError(
+            `${firstError.message}: ${firstError.path.join("")}`,
+            result.error
+          ),
+          help: prevResult.help,
+          exitCode: 1,
+        },
+      };
+    }
+    return { success: true, value: result.data as T };
+  }
+
+  private _handleAndExit(
+    handlerArg: ParseResultError | ParseResultHelp | ParseResultVersion
+  ): never {
+    if (this._handler != null) {
+      this._handler(handlerArg);
+    }
+    util.errorExit(handlerArg, this._version);
   }
 
   subcommand(command: Command): CommandParser {
