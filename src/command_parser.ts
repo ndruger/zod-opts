@@ -131,7 +131,7 @@ export class CommandParser {
 
   parse(args?: string[]): void {
     const validArgs = args ?? process.argv.slice(2);
-    if (args.length === 0) {
+    if (validArgs.length === 0) {
       return this.showHelp();
     }
 
