@@ -131,6 +131,9 @@ export class CommandParser {
 
   parse(args?: string[]): void {
     const validArgs = args ?? process.argv.slice(2);
+    if (args.length === 0) {
+      return this.showHelp();
+    }
 
     const commands = this._commands.map((command) => {
       return command._toParseCommand();
