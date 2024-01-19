@@ -131,10 +131,6 @@ export class CommandParser {
 
   parse(args?: string[]): void {
     const validArgs = args ?? process.argv.slice(2);
-    if (validArgs.length === 0) {
-      return this.showHelp();
-    }
-
     const commands = this._commands.map((command) => {
       return command._toParseCommand();
     });
@@ -299,6 +295,10 @@ export class CommandParser {
     | ParseResultVersion
     | ParseResultMatch<object> {
     try {
+      if (args.length === 0) {
+        throw new ParseError("No command specified");
+      }
+      
       const parsed = parseMultipleCommands({
         args,
         commands,
