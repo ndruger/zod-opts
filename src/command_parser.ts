@@ -296,6 +296,10 @@ export class CommandParser {
     | ParseResultVersion
     | ParseResultMatch<object> {
     try {
+      if (args.length === 0) {
+        throw new ParseError("No command specified");
+      }
+      
       const parsed = parseMultipleCommands({
         args,
         commands,
