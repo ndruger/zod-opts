@@ -97,6 +97,25 @@ describe("parse()", () => {
       .parse(["command2", "--opt2", "str1", "pos2"]);
   });
 
+  // zod-opts doesn't support optional subcommand yet.
+  test("error when no command specified", () => {
+    expectProcessExit("No command specified", 1, () => {
+      parser()
+        .subcommand(
+          command("command1")
+            .options({
+              opt1: {
+                type: z.string(),
+              },
+            })
+            .action((parsed) => {
+              expect(1).toBe(0);
+            })
+        )
+        .parse([]);
+    });
+  });
+
   describe("custom validation", () => {
     test("success", () => {
       parser()
@@ -197,7 +216,7 @@ Options:
       });
     });
 
-    test("global help(name() and description() after subcommand())0", () => {
+    test("global help(name() and description() after subcommand())", () => {
       const expectedHelp = `Usage: scriptA [options] <command>
 
 desc
@@ -218,6 +237,30 @@ Options:
           .version("1.1.1")
           .description("desc")
           .parse(["--help"]);
+      });
+    });
+
+    test("global help when --help with non-existing command", () => {
+      const expectedHelp = `Usage: scriptA [options] <command>
+
+desc
+
+Commands:
+  command1  
+  command2  
+
+Options:
+  -h, --help     Show help     
+  -V, --version  Show version  
+`;
+      expectExit0(expectedHelp, () => {
+        parser()
+          .name("scriptA")
+          .version("1.1.1")
+          .description("desc")
+          .subcommand(createActionUnexpectedCommand("command1"))
+          .subcommand(createActionUnexpectedCommand("command2"))
+          .parse(["--help", "nonExistingCommand"]);
       });
     });
 
@@ -287,7 +330,7 @@ Options:
   });
 
   test("error on finding command", () => {
-    expectProcessExit("Unknown argument: missing_command", 1, () => {
+    expectProcessExit("Unknown command: missing_command", 1, () => {
       parser()
         .name("scriptNameA")
         .subcommand(
@@ -305,7 +348,7 @@ Options:
         ._internalHandler((result) => {
           expect(result).toEqual({
             type: "error",
-            error: new ParseError("Unknown argument: missing_command"),
+            error: new ParseError("Unknown command: missing_command"),
             help: expect.stringContaining(
               "Usage: scriptNameA [options] <command>"
             ),

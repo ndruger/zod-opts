@@ -75,10 +75,10 @@ export function validateCandidateValue(
 
 export function validatePositionalCandidateValue(
   option: InternalPositionalArgument,
-  value: string | string[] | undefined
+  value: string | string[]
 ): ValidPositionalValue | undefined {
   if (option.isArray) {
-    if (value === undefined || !Array.isArray(value)) {
+    if (!Array.isArray(value)) {
       return undefined;
     }
     switch (option.type) {
@@ -96,12 +96,9 @@ export function validatePositionalCandidateValue(
 
   switch (option.type) {
     case "string":
-      if (value === undefined) {
-        return undefined;
-      }
       return { value };
     case "number":
-      if (value === undefined || !isNumericValue(value as string)) {
+      if (!isNumericValue(value as string)) {
         return undefined;
       }
       return { value: parseFloat(value as string) };

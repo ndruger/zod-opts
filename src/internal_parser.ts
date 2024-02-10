@@ -465,40 +465,35 @@ function parseToFindCommand(
   args: string[],
   commandNames: string[]
 ): ParseToFindCommandResult {
-  let state: ParseToFindCommandResult = {
+  const state: ParseToFindCommandResult = {
     index: 0,
     isHelp: false,
     isVersion: false,
     commandName: undefined,
   };
+  debugLog("state", JSON.stringify(state));
 
-  while (state.index < args.length) {
-    const arg = args[state.index];
-    debugLog("state", JSON.stringify(state));
-    if (isHelpOption(arg)) {
-      const next = args[state.index + 1];
-      if (next === undefined) {
-        // global help
-        state = { ...state, isHelp: true };
-        break;
-      } else if (commandNames.includes(next)) {
-        // command help
-        state = { ...state, isHelp: true, commandName: next };
-        break;
-      }
-      state = { ...state, isHelp: true, index: state.index + 1 };
-    } else if (isVersionOption(arg)) {
-      state = { ...state, isVersion: true };
-      break;
-    } else if (commandNames.includes(arg)) {
-      state = { ...state, commandName: arg, index: state.index + 1 };
-      break;
-    } else {
-      throw new ParseError(`Unknown argument: ${arg}`);
+  const arg = args[state.index];
+  if (isHelpOption(arg)) {
+    const next = args[state.index + 1];
+    if (next === undefined) {
+      // global help
+      return { ...state, isHelp: true };
+    } else if (commandNames.includes(next)) {
+      // command help
+      return { ...state, isHelp: true, commandName: next };
     }
+    // e.g. "program --help nonExistingCommand"
+    // e.g. "program --help --version"
+    // e.g. "program --help --option_like"
+    return { ...state, isHelp: true };
+  } else if (isVersionOption(arg)) {
+    return { ...state, isVersion: true };
+  } else if (commandNames.includes(arg)) {
+    return { ...state, commandName: arg, index: state.index + 1 };
+  } else {
+    throw new ParseError(`Unknown command: ${arg}`);
   }
-
-  return state;
 }
 
 export function parseMultipleCommands({

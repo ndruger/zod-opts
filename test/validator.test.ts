@@ -159,20 +159,6 @@ describe("validatePositionalCandidateValue()", () => {
     expect(
       validatePositionalCandidateValue(
         createInternalPositionalArgument({ type: "string" }),
-        undefined
-      )
-    ).toEqual(undefined);
-
-    expect(
-      validatePositionalCandidateValue(
-        createInternalPositionalArgument({ type: "number" }),
-        undefined
-      )
-    ).toEqual(undefined);
-
-    expect(
-      validatePositionalCandidateValue(
-        createInternalPositionalArgument({ type: "string" }),
         ""
       )
     ).toEqual({ value: "" });
