@@ -132,7 +132,10 @@ function validateOptions(
   const validValues: Array<
     [string, string | number | boolean | string[] | number[] | undefined]
   > = candidates.map((candidate) => {
-    const option = optionMap.get(candidate.name) as InternalOption;
+    const option = optionMap.get(candidate.name);
+    if (option === undefined) {
+      throw new ParseError(`Unknown option: ${candidate.name}`);
+    }
     const validated = validateCandidateValue(
       option,
       candidate.value,
@@ -193,8 +196,12 @@ function validatePositionalArguments(
   const validValues: Array<[string, string | number | string[] | number[]]> =
     candidates.map((candidate) => {
       const name = candidate.name;
+      const positionalOption = positionalArgMap.get(name);
+      if (positionalOption === undefined) {
+        throw new ParseError(`Unknown positional argument: ${name}`);
+      }
       const validated = validatePositionalCandidateValue(
-        positionalArgMap.get(name) as InternalPositionalArgument,
+        positionalOption,
         candidate.value
       );
       if (validated === undefined) {

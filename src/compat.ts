@@ -43,7 +43,21 @@ export function isZodSchema(value: unknown): value is ZodTypeAny {
  * v4 has the "_zod" property
  */
 export function isZodV4(schema: ZodTypeAny): boolean {
-  return "_zod" in schema;
+  const defContainer = schema as {
+    _zod?: { def?: SchemaDef };
+    _def?: SchemaDef;
+  };
+  const def = defContainer._zod?.def;
+  if (def !== undefined && typeof def === "object") {
+    return true;
+  }
+  const legacyDef = defContainer._def;
+  return (
+    legacyDef !== undefined &&
+    typeof legacyDef === "object" &&
+    typeof legacyDef.type === "string" &&
+    typeof legacyDef.typeName !== "string"
+  );
 }
 
 /**
@@ -52,10 +66,19 @@ export function isZodV4(schema: ZodTypeAny): boolean {
  * v4: schema._zod.def
  */
 export function getDef(schema: ZodTypeAny): SchemaDef {
-  if (isZodV4(schema)) {
-    return (schema as { _zod: { def: SchemaDef } })._zod.def;
+  const defContainer = schema as {
+    _zod?: { def?: SchemaDef };
+    _def?: SchemaDef;
+  };
+  const v4Def = defContainer._zod?.def;
+  if (v4Def !== undefined) {
+    return v4Def;
   }
-  return (schema as { _def: SchemaDef })._def;
+  const legacyDef = defContainer._def;
+  if (legacyDef !== undefined) {
+    return legacyDef;
+  }
+  throw new Error("Invalid Zod schema: missing definition");
 }
 
 // Type name mapping between v3 and v4
@@ -71,7 +94,26 @@ const V3_TO_V4_TYPE_MAP: Record<string, string> = {
   ZodEnum: "enum",
   ZodEffects: "effects",
   ZodPipeline: "pipe",
+  ZodBranded: "branded",
+  ZodNullable: "nullable",
+  ZodPromise: "promise",
+  ZodReadonly: "readonly",
+  ZodRecord: "record",
 };
+
+function normalizeDefType(def: SchemaDef): string {
+  const raw =
+    typeof def.typeName === "string"
+      ? def.typeName
+      : typeof def.type === "string"
+      ? def.type
+      : "";
+  if (raw in V3_TO_V4_TYPE_MAP) {
+    return raw;
+  }
+  const fromV4 = Object.entries(V3_TO_V4_TYPE_MAP).find(([, v4]) => v4 === raw);
+  return fromV4?.[0] ?? raw;
+}
 
 /**
  * Get the type name of a schema (returns v3 format)
@@ -80,15 +122,7 @@ const V3_TO_V4_TYPE_MAP: Record<string, string> = {
  */
 export function getTypeName(schema: ZodTypeAny): string {
   const def = getDef(schema);
-  if (isZodV4(schema)) {
-    const v4Type = def.type ?? "";
-    // Convert v4 type name to v3 type name
-    const v3Type = Object.entries(V3_TO_V4_TYPE_MAP).find(
-      ([, v4]) => v4 === v4Type
-    )?.[0];
-    return v3Type ?? v4Type;
-  }
-  return def.typeName ?? "";
+  return normalizeDefType(def);
 }
 
 /**

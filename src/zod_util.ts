@@ -27,8 +27,11 @@ const TYPE_NAME_MAP: Record<string, string> = {
   ZodDefault: "default",
   ZodEnum: "enum",
   ZodEffects: "effects",
-  ZodPrefault: "prefault",
   ZodPipeline: "pipe",
+  ZodNullable: "nullable",
+  ZodBranded: "branded",
+  ZodPromise: "promise",
+  ZodReadonly: "readonly",
 };
 
 function normalizeTypeName(typeName: string): string {
@@ -157,7 +160,7 @@ function resolveInnerType(def: SchemaDef): SchemaDef {
   let current: SchemaDef = def;
   while (true) {
     const typeName = getTypeName(current);
-    if (["optional", "default", "prefault"].includes(typeName)) {
+    if (["optional", "default"].includes(typeName)) {
       const next = getWrappedDef(current);
       if (next == null) {
         return current;
@@ -165,7 +168,16 @@ function resolveInnerType(def: SchemaDef): SchemaDef {
       current = next;
       continue;
     }
-    if (["effects", "pipe"].includes(typeName)) {
+    if (
+      [
+        "effects",
+        "pipe",
+        "branded",
+        "nullable",
+        "promise",
+        "readonly",
+      ].includes(typeName)
+    ) {
       const next = getWrappedDef(current);
       if (next == null) {
         return current;

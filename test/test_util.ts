@@ -15,7 +15,8 @@ export function mockConsole(
 
 export function mockExit(): jest.SpiedFunction<typeof process.exit> {
   return jest.spyOn(process, "exit").mockImplementation((code) => {
-    throw new Error(`process.exit: ${code as number}`);
+    const exitCode = typeof code === "number" ? code : 0;
+    throw new Error(`process.exit: ${exitCode}`);
   });
 }
 

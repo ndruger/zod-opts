@@ -100,8 +100,7 @@ function generateChoiceString(
 function generateDescriptionString(
   option: InternalOption | InternalPositionalArgument
 ): string {
-  const descriptionStr =
-    option.description !== undefined ? option.description : "";
+  const descriptionStr = option.description ?? "";
   const defaultStr = generateDefaultString(option);
   const choiceStr = generateChoiceString(option);
 

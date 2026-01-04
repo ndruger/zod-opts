@@ -20,6 +20,19 @@ describe("Zod Compatibility Layer", () => {
       // Returns true/false depending on the version
       expect(typeof isV4).toBe("boolean");
     });
+
+    test("detects v4-style _def shape", () => {
+      const fakeV4 = {
+        parse() {
+          return "ok";
+        },
+        _def: {
+          type: "string",
+          description: "fake v4",
+        },
+      };
+      expect(isZodV4(fakeV4 as unknown as z.ZodTypeAny)).toBe(true);
+    });
   });
 
   describe("getDef", () => {
