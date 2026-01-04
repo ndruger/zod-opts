@@ -8,6 +8,7 @@ import globals from "globals";
 
 export default [
   js.configs.recommended,
+  ...tsPlugin.configs["flat/recommended"],
   {
     files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
@@ -24,7 +25,6 @@ export default [
       },
     },
     plugins: {
-      "@typescript-eslint": tsPlugin,
       import: importPlugin,
       "simple-import-sort": simpleImportSort,
     },
