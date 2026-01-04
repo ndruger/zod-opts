@@ -56,12 +56,12 @@ const schema = z.string().default("foo").optional();
 // Zod v4: schema.parse(undefined) → "foo"
 ```
 
-| Pattern | Zod v3 | Zod v4 |
-|---------|--------|--------|
-| `z.string().optional()` | `undefined` | `undefined` |
-| `z.string().default("foo")` | `"foo"` | `"foo"` |
-| `z.string().optional().default("foo")` | `"foo"` | `"foo"` |
-| `z.string().default("foo").optional()` | `undefined` | `"foo"` |
+| Pattern                                | Zod v3      | Zod v4      |
+| -------------------------------------- | ----------- | ----------- |
+| `z.string().optional()`                | `undefined` | `undefined` |
+| `z.string().default("foo")`            | `"foo"`     | `"foo"`     |
+| `z.string().optional().default("foo")` | `"foo"`     | `"foo"`     |
+| `z.string().default("foo").optional()` | `undefined` | `"foo"`     |
 
 In Zod v4, `.default()` always applies regardless of `.optional()`. If you're migrating from v3 to v4, review any usage of `.default().optional()` as the behavior has changed.
 

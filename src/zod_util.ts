@@ -1,6 +1,12 @@
 import type { ZodTypeAny } from "zod";
 
-import { getDef, getDescription, isZodSchema, type SchemaDef } from "./compat";
+import {
+  getDef,
+  getDescription,
+  isRecord,
+  isZodSchema,
+  type SchemaDef,
+} from "./compat";
 import type {
   BaseType,
   BaseTypeT,
@@ -11,10 +17,6 @@ import type {
 } from "./type";
 import { BASE_TYPES } from "./type";
 import { uniq } from "./util";
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
 
 const TYPE_NAME_MAP: Record<string, string> = {
   ZodString: "string",
