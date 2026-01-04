@@ -212,10 +212,7 @@ describe("validate()", () => {
       positionalArgs: [],
       args: ["--unknown", "value"],
     };
-    const parsed = parse(params);
-    expect(() =>
-      validate(parsed, params.options, params.positionalArgs)
-    ).toThrow(ParseError);
+    expect(() => parse(params)).toThrow(ParseError);
   });
 
   test("throws on unknown positional argument", () => {
@@ -224,9 +221,6 @@ describe("validate()", () => {
       positionalArgs: [createInternalPositionalArgument({ name: "pos1" })],
       args: ["pos1", "pos2"],
     };
-    const parsed = parse(params);
-    expect(() =>
-      validate(parsed, params.options, params.positionalArgs)
-    ).toThrow(ParseError);
+    expect(() => parse(params)).toThrow(ParseError);
   });
 });

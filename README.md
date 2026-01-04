@@ -67,6 +67,12 @@ In Zod v4, `.default()` always applies regardless of `.optional()`. If you're mi
 
 **Recommendation**: Use `.default("foo")` alone if you want a default value. The `.optional()` suffix is redundant in Zod v4.
 
+### Changes introduced for Zod v4 support
+
+- Zod schema inspection now uses the compatibility layer to recognize v4-specific shapes (e.g., enums defined via `entries`, arrays with `element`), so more v4 schemas are accepted without code changes.
+- Optional/default handling is stricter: defaults wrapped in `optional`/`effects`/`pipe`/`nullable`/`readonly` are resolved before building option metadata, matching Zod v4 behavior.
+- Unknown commands/options/positionals now surface clear `ParseError` messages early; validation no longer silently assumes definitions exist. This improves feedback for mis-typed flags when running under either Zod v3 or v4.
+
 ## Quick Start
 
 File: [simple.ts](./example/simple.ts)
