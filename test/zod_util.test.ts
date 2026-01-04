@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { isZodV4 } from "../src/compat";
 import type { Option, PositionalArgument } from "../src/type";
 import {
   optionToInternal,
@@ -196,6 +197,44 @@ describe("optionToInternal()", () => {
         alias: "a",
         description: "description1",
         required: false,
+        isArray: false,
+      });
+    });
+
+    test("transform", () => {
+      expect(
+        optionToInternal(
+          createOption({
+            type: z.string().transform((value) => value.toUpperCase()),
+          }),
+          "name1"
+        )
+      ).toEqual({
+        type: "string",
+        name: "name1",
+        alias: "a",
+        description: "description1",
+        required: true,
+        isArray: false,
+      });
+    });
+
+    test("pipe", () => {
+      expect(
+        optionToInternal(
+          createOption({
+            type: z
+              .string()
+              .pipe(z.string().transform((value) => value.trim())),
+          }),
+          "name1"
+        )
+      ).toEqual({
+        type: "string",
+        name: "name1",
+        alias: "a",
+        description: "description1",
+        required: true,
         isArray: false,
       });
     });
@@ -441,25 +480,64 @@ describe("optionToInternal()", () => {
     });
 
     test("refine union of refine element", () => {
+      const result = optionToInternal(
+        createOption({
+          type: z
+            .union([z.boolean().refine(() => true), z.boolean().default(true)])
+            .refine(() => true),
+        }),
+        "name1"
+      );
+      expect(result.type).toBe("boolean");
+      expect(result.name).toBe("name1");
+      expect(result.alias).toBe("a");
+      expect(result.description).toBe("description1");
+      expect(result.isArray).toBe(false);
+      // v3: required=true (default in union doesn't make it optional)
+      // v4: required=false (union containing default(true) makes it optional)
+      const expectedRequired = !isZodV4(z.string());
+      expect(result.required).toBe(expectedRequired);
+    });
+  });
+
+  describe("array", () => {
+    test("default array option", () => {
       expect(
         optionToInternal(
           createOption({
-            type: z
-              .union([
-                z.boolean().refine(() => true),
-                z.boolean().default(true),
-              ])
-              .refine(() => true),
+            type: z.array(z.string()).default([]),
           }),
           "name1"
         )
       ).toEqual({
-        type: "boolean",
+        type: "string",
+        name: "name1",
+        alias: "a",
+        description: "description1",
+        required: false,
+        defaultValue: [],
+        isArray: true,
+      });
+    });
+
+    test("array with transform", () => {
+      expect(
+        optionToInternal(
+          createOption({
+            type: z
+              .array(z.string())
+              .transform((items) => items.map((item) => item.trim())),
+          }),
+          "name1"
+        )
+      ).toEqual({
+        type: "string",
         name: "name1",
         alias: "a",
         description: "description1",
         required: true,
-        isArray: false,
+        defaultValue: undefined,
+        isArray: true,
       });
     });
   });

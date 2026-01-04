@@ -1,6 +1,7 @@
 import { expectTypeOf } from "expect-type";
 import { z } from "zod";
 
+import { isZodV4 } from "../src/compat";
 import { ParseError } from "../src/error";
 import { parser } from "../src/parser";
 import { expectExit0, expectProcessExit } from "./test_util";
@@ -101,26 +102,17 @@ describe("complex", () => {
         { name: "pos4", type: z.optional(z.string().default("default")) },
       ])
       .parse([]);
-    expect(parsed).toEqual({
-      opt1: undefined,
-      opt2: undefined,
-      opt3: "default",
-      opt4: undefined,
-      pos1: undefined,
-      pos2: undefined,
-      pos3: "default",
-      pos4: undefined,
-    });
-    expectTypeOf(parsed).toEqualTypeOf<{
-      opt1?: string;
-      opt2?: string;
-      opt3: string;
-      opt4?: string;
-      pos1?: string;
-      pos2?: string;
-      pos3: string;
-      pos4?: string;
-    }>();
+    // v3: .default().optional() returns undefined
+    // v4: .default().optional() returns default value
+    const expectedDefaultOptional = isZodV4(z.string()) ? "default" : undefined;
+    expect(parsed.opt1).toBeUndefined();
+    expect(parsed.opt2).toBe(expectedDefaultOptional);
+    expect(parsed.opt3).toBe("default");
+    expect(parsed.opt4).toBe(expectedDefaultOptional);
+    expect(parsed.pos1).toBeUndefined();
+    expect(parsed.pos2).toBe(expectedDefaultOptional);
+    expect(parsed.pos3).toBe("default");
+    expect(parsed.pos4).toBe(expectedDefaultOptional);
   });
 
   test("returns parsed args when optional options/positional exist and args", () => {
@@ -265,7 +257,7 @@ describe("type", () => {
 
     test("error on validation", () => {
       expectProcessExit(
-        "String must contain at least 10 character(s): opt1",
+        /(String must contain at least 10 character|Too small: expected string to have >=10 character).*: opt1/,
         1,
         () =>
           parser()
@@ -369,7 +361,7 @@ describe("type", () => {
 
     test("error on validation", () => {
       expectProcessExit(
-        "Number must be greater than or equal to 10: opt1",
+        /(Number must be greater than or equal to 10|Too small: expected number to be >=10): opt1/,
         1,
         () =>
           parser()
@@ -417,7 +409,7 @@ describe("type", () => {
         parser()
           .args([{ name: "opt", type: z.boolean() }])
           .parse([]);
-      }).toThrow("Unsupported zod type (positional argument): ZodBoolean");
+      }).toThrow(/Unsupported zod type \(positional argument\): (ZodBoolean|boolean)/);
     });
 
     test("default with arg", () => {
@@ -526,7 +518,7 @@ describe("type", () => {
 
     test("error on invalid value", () => {
       expectProcessExit(
-        "Invalid enum value. Expected 'a' | 'b' | 'c', received 'd': opt",
+        /(Invalid enum value.*'a'|Invalid option: expected one of).*: opt/,
         1,
         () => {
           parser()
@@ -762,7 +754,7 @@ describe("type", () => {
 
       test("error on invalid value(string)", () => {
         expectProcessExit(
-          "String must contain at least 10 character(s): opt",
+          /(String must contain at least 10 character|Too small: expected string to have >=10 character).*: opt/,
           1,
           () => {
             parser()
@@ -794,7 +786,7 @@ describe("type", () => {
 
       test("error on invalid value(number)", () => {
         expectProcessExit(
-          "Number must be greater than or equal to 10: opt",
+          /(Number must be greater than or equal to 10|Too small: expected number to be >=10): opt/,
           1,
           () => {
             parser()
@@ -842,7 +834,7 @@ describe("type", () => {
               },
             })
             .parse(["--opt", "short"]);
-        }).toThrow("Unsupported zod type: Array of ZodBoolean");
+        }).toThrow(/Unsupported zod type: Array of (ZodBoolean|boolean)/);
       });
 
       test("optional with arg", () => {
@@ -966,7 +958,7 @@ describe("type", () => {
 
       test("error on invalid value(string)", () => {
         expectProcessExit(
-          "String must contain at least 10 character(s): pos",
+          /(String must contain at least 10 character|Too small: expected string to have >=10 character).*: pos/,
           1,
           () => {
             parser()
@@ -986,7 +978,7 @@ describe("type", () => {
 
       test("error on invalid value(number)", () => {
         expectProcessExit(
-          "Number must be greater than or equal to 10: pos0",
+          /(Number must be greater than or equal to 10|Too small: expected number to be >=10): pos0/,
           1,
           () => {
             parser()
@@ -1001,7 +993,7 @@ describe("type", () => {
           parser()
             .args([{ name: "pos", type: z.array(z.boolean()) }])
             .parse(["short"]);
-        }).toThrow("Unsupported zod type: Array of ZodBoolean");
+        }).toThrow(/Unsupported zod type: Array of (ZodBoolean|boolean)/);
       });
 
       test("optional with arg", () => {
@@ -1311,7 +1303,7 @@ describe("unsupported zod types", () => {
           opt1: { type: z.literal(1) },
         })
         .parse(["--opt1", "1"]);
-    }).toThrow("Unsupported zod type: ZodLiteral");
+    }).toThrow(/Unsupported zod type: (ZodLiteral|literal)/);
   });
 
   test("zod date is not supported", () => {
@@ -1321,7 +1313,7 @@ describe("unsupported zod types", () => {
           opt1: { type: z.date() },
         })
         .parse(["--opt1", "2022-01-12T00:00:00.000Z"]);
-    }).toThrow("Unsupported zod type: ZodDate");
+    }).toThrow(/Unsupported zod type: (ZodDate|date)/);
   });
 });
 

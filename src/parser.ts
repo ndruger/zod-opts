@@ -240,7 +240,7 @@ export class Parser<
   ): { success: true; value: T } | { success: false; error: ParseResultError } {
     const result = z.object(shape).safeParse(prevResult.parsed);
     if (!result.success) {
-      const firstError: z.ZodIssue = result.error.errors[0];
+      const firstError: z.ZodIssue = result.error.issues[0];
       return {
         success: false,
         error: {

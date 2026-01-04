@@ -10,8 +10,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: [16, 18]
+        node: [18, 20, 22]
         os: [ubuntu-latest]
+        zod: ["3", "4"]
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node }}
@@ -20,6 +21,8 @@ jobs:
           cache: "npm"
           node-version: ${{ matrix.node }}
       - run: npm ci
+      - name: Install Zod ${{ matrix.zod }}
+        run: npm install zod@${{ matrix.zod }}
       - run: npm run lint
       - run: npm run test_cov # ts-jest doesn't need build js files
       - name: Upload coverage reports to Codecov

@@ -299,7 +299,7 @@ export class CommandParser {
       if (args.length === 0) {
         throw new ParseError("No command specified");
       }
-      
+
       const parsed = parseMultipleCommands({
         args,
         commands,
@@ -339,7 +339,7 @@ export class CommandParser {
   ): { success: true; value: T } | { success: false; error: ParseResultError } {
     const result = z.object(shape).safeParse(prevResult.parsed);
     if (!result.success) {
-      const firstError: z.ZodIssue = result.error.errors[0];
+      const firstError: z.ZodIssue = result.error.issues[0];
       return {
         success: false,
         error: {
