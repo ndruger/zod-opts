@@ -443,10 +443,14 @@ Options:
               })
           )
           ._internalHandler((result) => {
+            if (result.type !== "error") {
+              throw new Error(
+                `unexpected non-error result in validation test: ${result.type}`
+              );
+            }
             expect(result.commandName).toBe("command1");
-            expect(result.type).toBe("error");
             expect(result.exitCode).toBe(1);
-            expect((result as { error: Error }).error.message).toMatch(
+            expect(result.error.message).toMatch(
               /(String must contain at least 10 character|Too small: expected string to have >=10 character).*: opt1/
             );
           })

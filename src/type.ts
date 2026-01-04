@@ -45,7 +45,6 @@ export type PositionalArgumentsToShape<T, TAcc = {}> = T extends [
       ? PositionalArgumentsToShape<
           Rest,
           {
-            // eslint-disable-next-line no-unused-vars
             [Key in Name]: ZodType;
           } & TAcc
         >
@@ -149,11 +148,10 @@ export interface FormatValidPositionalArgument {
 type Try<A, B, C> = A extends B ? A : C;
 
 type NarrowRaw<T> =
-  | (T extends Function ? T : never) // eslint-disable-line @typescript-eslint/ban-types
+  | (T extends Function ? T : never)
   | (T extends string | number | bigint | boolean ? T : never)
   | (T extends [] ? [] : never)
   | {
-      // eslint-disable-next-line no-use-before-define
       [K in keyof T]: K extends "description" ? T[K] : NarrowNotZod<T[K]>;
     };
 

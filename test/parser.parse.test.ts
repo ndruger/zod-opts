@@ -409,7 +409,9 @@ describe("type", () => {
         parser()
           .args([{ name: "opt", type: z.boolean() }])
           .parse([]);
-      }).toThrow(/Unsupported zod type \(positional argument\): (ZodBoolean|boolean)/);
+      }).toThrow(
+        /Unsupported zod type \(positional argument\): (ZodBoolean|boolean)/
+      );
     });
 
     test("default with arg", () => {
@@ -1132,9 +1134,8 @@ describe("refine", () => {
         },
       })
       .parse(["--opt1", "foo"]);
-    expectTypeOf(parsed).toEqualTypeOf<{
-      opt1: string;
-    }>();
+    expect(parsed.opt1).toBe("foo");
+    expectTypeOf(parsed.opt1).toMatchTypeOf<string>();
   });
 
   test("error", () => {

@@ -22,6 +22,8 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: npm ci
       - run: npm run lint
+      - name: Typecheck (Zod ${{ matrix.zod }})
+        run: npm run typecheck:zod${{ matrix.zod }}
       - name: Test with coverage (Zod ${{ matrix.zod }})
         run: npm run test_cov:zod${{ matrix.zod }} # ts-jest doesn't need build js files
       - name: Upload coverage reports to Codecov

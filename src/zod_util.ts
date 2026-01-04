@@ -5,6 +5,7 @@ import {
   getDescription,
   isRecord,
   isZodSchema,
+  isZodV4,
   type SchemaDef,
 } from "./compat";
 import type {
@@ -70,20 +71,21 @@ function getWrappedDef(def: SchemaDef): SchemaDef | undefined {
 }
 
 export function getDefaultValue(
-  def: SchemaDef
+  def: SchemaDef,
+  allowOptionalDefault: boolean = false
 ): string[] | number[] | BaseTypeT | undefined {
   const resolveDefault = (
     currentDef: unknown,
-    blockedByOptional: boolean
+    optionalSeen: boolean
   ): unknown => {
     if (currentDef == null || typeof currentDef !== "object") {
       return undefined;
     }
     const typedDef = currentDef as SchemaDef;
     const typeName = getTypeName(typedDef);
-    const nextBlocked = blockedByOptional || typeName === "optional";
+    const nextOptionalSeen = optionalSeen || typeName === "optional";
     if ("defaultValue" in typedDef) {
-      if (nextBlocked) {
+      if (nextOptionalSeen && !allowOptionalDefault) {
         return undefined;
       }
       const value = typedDef.defaultValue;
@@ -96,7 +98,7 @@ export function getDefaultValue(
     if (next == null) {
       return undefined;
     }
-    return resolveDefault(next, nextBlocked);
+    return resolveDefault(next, nextOptionalSeen);
   };
 
   const defaultValue = resolveDefault(def, false);
@@ -267,7 +269,7 @@ function getEnumValues(def: SchemaDef): string[] | undefined {
     Array.isArray(solvedDef.values) &&
     solvedDef.values.every((value) => typeof value === "string")
   ) {
-    return solvedDef.values as string[];
+    return solvedDef.values;
   }
   if (isRecord(solvedDef.entries)) {
     return Object.keys(solvedDef.entries);
@@ -278,7 +280,7 @@ function getEnumValues(def: SchemaDef): string[] | undefined {
 export function optionToInternal(option: Option, name: string): InternalOption {
   const zodType = option.type;
   const def = getDef(zodType);
-  const defaultValue = getDefaultValue(def) as
+  const defaultValue = getDefaultValue(def, isZodV4(zodType)) as
     | string
     | number
     | string[]
@@ -308,7 +310,7 @@ export function positionalArgumentToInternal(
 ): InternalPositionalArgument {
   const zodType = option.type;
   const def = getDef(zodType);
-  const defaultValue = getDefaultValue(def) as
+  const defaultValue = getDefaultValue(def, isZodV4(zodType)) as
     | string
     | number
     | string[]
