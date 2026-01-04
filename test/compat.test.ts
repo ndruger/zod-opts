@@ -12,6 +12,15 @@ import {
   isZodV4,
 } from "../src/compat";
 
+function makeFakeSchema(def: Record<string, unknown>): z.ZodTypeAny {
+  return {
+    parse() {
+      return undefined;
+    },
+    _def: def,
+  } as unknown as z.ZodTypeAny;
+}
+
 describe("Zod Compatibility Layer", () => {
   describe("isZodV4", () => {
     test("detects Zod version", () => {
@@ -198,6 +207,13 @@ describe("Zod Compatibility Layer", () => {
       const elementType = getArrayElementType(schema);
       expect(elementType).toBeUndefined();
     });
+
+    test("uses v4-style element property when present", () => {
+      const element = z.number();
+      const fake = makeFakeSchema({ type: "array", element });
+      const elementType = getArrayElementType(fake);
+      expect(elementType).toBe(element);
+    });
   });
 
   describe("getDescription", () => {
@@ -211,6 +227,24 @@ describe("Zod Compatibility Layer", () => {
       const schema = z.string();
       const description = getDescription(schema);
       expect(description).toBeUndefined();
+    });
+
+    test("returns description stored only on def", () => {
+      const fake = makeFakeSchema({
+        typeName: "ZodString",
+        description: "from def",
+      });
+      expect(getDescription(fake)).toBe("from def");
+    });
+  });
+
+  describe("getEnumValues entries path", () => {
+    test("extracts keys from entries map", () => {
+      const fake = makeFakeSchema({
+        typeName: "ZodEnum",
+        entries: { a: true, b: true },
+      });
+      expect(getEnumValues(fake)).toEqual(["a", "b"]);
     });
   });
 });

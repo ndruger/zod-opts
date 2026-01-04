@@ -7,6 +7,15 @@ import {
   positionalArgumentToInternal,
 } from "../src/zod_util";
 
+function makeFakeSchema(def: Record<string, unknown>): z.ZodTypeAny {
+  return {
+    parse() {
+      return undefined;
+    },
+    _def: def,
+  } as unknown as z.ZodTypeAny;
+}
+
 export function createOption({
   type = z.string(),
   alias = "a",
@@ -540,6 +549,13 @@ describe("optionToInternal()", () => {
         isArray: true,
       });
     });
+
+    test("throws when element type is missing", () => {
+      const fakeArray = makeFakeSchema({ typeName: "ZodArray" });
+      expect(() => optionToInternal({ type: fakeArray, alias: "a" }, "name1")).toThrow(
+        new Error("Array element type not found")
+      );
+    });
   });
 
   describe("throw runtime error on unsupported default value", () => {
@@ -576,6 +592,31 @@ describe("optionToInternal()", () => {
           "name1"
         );
       }).toThrowError(new Error('Unsupported default value: [10,"false"]'));
+    });
+
+    test("enum values from entries map", () => {
+      const fakeEnum = makeFakeSchema({
+        typeName: "ZodEnum",
+        entries: { a: 1, b: 2 },
+      });
+      expect(
+        optionToInternal(
+          {
+            type: fakeEnum,
+            alias: "a",
+            description: "description1",
+          },
+          "name1"
+        )
+      ).toEqual({
+        type: "string",
+        name: "name1",
+        alias: "a",
+        description: "description1",
+        required: true,
+        enumValues: ["a", "b"],
+        isArray: false,
+      });
     });
   });
 });

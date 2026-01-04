@@ -1,3 +1,4 @@
+import { ParseError } from "../src/error";
 import { parse } from "../src/internal_parser";
 import {
   validate,
@@ -203,5 +204,29 @@ describe("validate()", () => {
       ],
       positionalArgs: [],
     });
+  });
+
+  test("throws on unknown option", () => {
+    const params = {
+      options: [createInternalOption({ name: "known" })],
+      positionalArgs: [],
+      args: ["--unknown", "value"],
+    };
+    const parsed = parse(params);
+    expect(() =>
+      validate(parsed, params.options, params.positionalArgs)
+    ).toThrow(ParseError);
+  });
+
+  test("throws on unknown positional argument", () => {
+    const params = {
+      options: [],
+      positionalArgs: [createInternalPositionalArgument({ name: "pos1" })],
+      args: ["pos1", "pos2"],
+    };
+    const parsed = parse(params);
+    expect(() =>
+      validate(parsed, params.options, params.positionalArgs)
+    ).toThrow(ParseError);
   });
 });

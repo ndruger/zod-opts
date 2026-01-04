@@ -624,6 +624,21 @@ describe("parseMultipleCommands", () => {
     });
   });
 
+  test("throws on unknown command", () => {
+    expect(() =>
+      parseMultipleCommands({
+        args: ["unknown"],
+        commands: [
+          {
+            name: "known",
+            options: [],
+            positionalArgs: [],
+          },
+        ],
+      })
+    ).toThrow(/Unknown command/);
+  });
+
   test("command help when '--help' before command name", () => {
     expect(
       parseMultipleCommands({
