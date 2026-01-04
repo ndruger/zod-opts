@@ -101,6 +101,18 @@ describe("optionToInternal()", () => {
       });
     });
     test("optional with default", () => {
+      const hasV4Default = isZodV4(z.string().default("default"));
+
+      const expectedOptionalDefault = {
+        type: "string",
+        name: "name1",
+        alias: "a",
+        description: "description1",
+        required: false, // stay optional even when default is present (matches safeParse)
+        ...(hasV4Default ? { defaultValue: "default" } : {}),
+        isArray: false,
+      } as const;
+
       expect(
         optionToInternal(
           createOption({
@@ -108,14 +120,8 @@ describe("optionToInternal()", () => {
           }),
           "name1"
         )
-      ).toEqual({
-        type: "string",
-        name: "name1",
-        alias: "a",
-        description: "description1",
-        required: false, // should be false, same with z.string().default("default").optional().safeParse(undefined)
-        isArray: false,
-      });
+      ).toEqual(expectedOptionalDefault);
+
       expect(
         optionToInternal(
           createOption({
@@ -123,14 +129,8 @@ describe("optionToInternal()", () => {
           }),
           "name1"
         )
-      ).toEqual({
-        type: "string",
-        name: "name1",
-        alias: "a",
-        description: "description1",
-        required: false, // should be false, same with z.optional(z.string().default("default")).safeParse(undefined)
-        isArray: false,
-      });
+      ).toEqual(expectedOptionalDefault);
+
       expect(
         optionToInternal(
           createOption({
@@ -143,7 +143,7 @@ describe("optionToInternal()", () => {
         name: "name1",
         alias: "a",
         description: "description1",
-        required: false, // should be false, same with z.string().optional().default("default").safeParse(undefined)
+        required: false,
         defaultValue: "default",
         isArray: false,
       });
@@ -552,9 +552,9 @@ describe("optionToInternal()", () => {
 
     test("throws when element type is missing", () => {
       const fakeArray = makeFakeSchema({ typeName: "ZodArray" });
-      expect(() => optionToInternal({ type: fakeArray, alias: "a" }, "name1")).toThrow(
-        new Error("Array element type not found")
-      );
+      expect(() =>
+        optionToInternal({ type: fakeArray, alias: "a" }, "name1")
+      ).toThrow(new Error("Array element type not found"));
     });
   });
 

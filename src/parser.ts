@@ -207,7 +207,7 @@ export class Parser<
     return zodParseResult.value;
   }
 
-  private _validateByCustomValidation<T extends object>(
+  private _validateByCustomValidation<T extends Record<string, unknown>>(
     value: T,
     help: string
   ): ParseResultError | undefined {
@@ -234,7 +234,7 @@ export class Parser<
     }
   }
 
-  private _zodParse<T>(
+  private _zodParse<T extends Record<string, unknown>>(
     prevResult: ParseResultMatch<T>,
     shape: z.ZodRawShape
   ): { success: true; value: T } | { success: false; error: ParseResultError } {

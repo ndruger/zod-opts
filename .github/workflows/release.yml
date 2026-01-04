@@ -7,12 +7,12 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
           registry-url: "https://registry.npmjs.org"
       - run: npm ci
       - run: npm run lint
       - run: npm run test # ts-jest doesn't need build js files
-      - run: npm rum build
+      - run: npm run build
       - uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}

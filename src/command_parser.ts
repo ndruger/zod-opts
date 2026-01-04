@@ -262,7 +262,7 @@ export class CommandParser {
     selectedCommand: InternalCommand,
     commands: InternalCommand[],
     scriptName: string
-  ): ParseResultMatch<object> {
+  ): ParseResultMatch<Record<string, unknown>> {
     const commandName = parsed.commandName ?? selectedCommand.name;
     const { options: validOptions, positionalArgs: validPositionalArguments } =
       validateMultipleCommands(
@@ -301,7 +301,7 @@ export class CommandParser {
     | ParseResultError
     | ParseResultHelp
     | ParseResultVersion
-    | ParseResultMatch<object> {
+    | ParseResultMatch<Record<string, unknown>> {
     try {
       if (args.length === 0) {
         throw new ParseError("No command specified");
@@ -343,7 +343,7 @@ export class CommandParser {
     }
   }
 
-  private _zodParse<T>(
+  private _zodParse<T extends Record<string, unknown>>(
     prevResult: ParseResultMatch<T>,
     shape: ZodRawShape
   ): { success: true; value: T } | { success: false; error: ParseResultError } {
@@ -367,7 +367,7 @@ export class CommandParser {
     return { success: true, value: result.data as T };
   }
 
-  private _validateByCustomValidation<T extends object>(
+  private _validateByCustomValidation<T extends Record<string, unknown>>(
     validation: ValidateCallback<ZodRawShape> | undefined,
     value: T,
     help: string

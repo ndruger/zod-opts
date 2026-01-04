@@ -8,7 +8,6 @@ import type {
 
 export function mockConsole(
   type: "error" | "warn" | "debug" | "log" = "error"
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any {
   return jest.spyOn(console, type).mockImplementation(() => {});
 }

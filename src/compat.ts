@@ -43,7 +43,7 @@ export function isZodSchema(value: unknown): value is ZodTypeAny {
  * v4 has the "_zod" property
  */
 export function isZodV4(schema: ZodTypeAny): boolean {
-  const defContainer = schema as {
+  const defContainer = schema as unknown as {
     _zod?: { def?: SchemaDef };
     _def?: SchemaDef;
   };
@@ -66,7 +66,7 @@ export function isZodV4(schema: ZodTypeAny): boolean {
  * v4: schema._zod.def
  */
 export function getDef(schema: ZodTypeAny): SchemaDef {
-  const defContainer = schema as {
+  const defContainer = schema as unknown as {
     _zod?: { def?: SchemaDef };
     _def?: SchemaDef;
   };
@@ -213,7 +213,7 @@ export function getEnumValues(schema: ZodTypeAny): string[] | undefined {
     Array.isArray(def.values) &&
     def.values.every((value) => typeof value === "string")
   ) {
-    return def.values as string[];
+    return def.values;
   }
   // v4 may use entries property
   if (isRecord(def.entries)) {

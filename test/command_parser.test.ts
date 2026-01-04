@@ -13,7 +13,7 @@ function createActionUnexpectedCommand(name: string): Command {
         type: z.string(),
       },
     })
-    .action((parsed) => {
+    .action((_parsed) => {
       expect(1).toBe(0);
     });
 }
@@ -108,7 +108,7 @@ describe("parse()", () => {
                 type: z.string(),
               },
             })
-            .action((parsed) => {
+            .action((_parsed) => {
               expect(1).toBe(0);
             })
         )
@@ -158,7 +158,7 @@ describe("parse()", () => {
                 }
                 return true;
               })
-              .action((parsed) => {
+              .action((_parsed) => {
                 expect(1).toBe(0);
               })
           )
@@ -182,7 +182,7 @@ describe("parse()", () => {
                 }
                 return true;
               })
-              .action((parsed) => {
+              .action((_parsed) => {
                 expect(1).toBe(0);
               })
           )
@@ -341,7 +341,7 @@ Options:
                 description: "a",
               },
             })
-            .action((parsed) => {
+            .action((_parsed) => {
               expect(1).toBe(0);
             })
         )
@@ -371,7 +371,7 @@ Options:
                 description: "a",
               },
             })
-            .action((parsed) => {
+            .action((_parsed) => {
               expect(1).toBe(0);
             })
         )
@@ -403,7 +403,7 @@ Options:
               },
             })
             .args([])
-            .action((parsed) => {
+            .action((_parsed) => {
               expect(1).toBe(0);
             })
         )
@@ -438,15 +438,19 @@ Options:
                 },
               })
               .args([])
-              .action((parsed) => {
+              .action((_parsed) => {
                 expect(1).toBe(0);
               })
           )
           ._internalHandler((result) => {
+            if (result.type !== "error") {
+              throw new Error(
+                `unexpected non-error result in validation test: ${result.type}`
+              );
+            }
             expect(result.commandName).toBe("command1");
-            expect(result.type).toBe("error");
             expect(result.exitCode).toBe(1);
-            expect((result as { error: Error }).error.message).toMatch(
+            expect(result.error.message).toMatch(
               /(String must contain at least 10 character|Too small: expected string to have >=10 character).*: opt1/
             );
           })
@@ -524,7 +528,7 @@ describe("getHelp()", () => {
         type: z.string(),
       },
     ])
-    .action((parsed) => {
+    .action((_parsed) => {
       expect(1).toBe(0);
     });
 
@@ -587,7 +591,7 @@ describe("showHelp()", () => {
         type: z.string(),
       },
     ])
-    .action((parsed) => {
+    .action((_parsed) => {
       expect(1).toBe(0);
     });
 
