@@ -68,7 +68,7 @@ export class Command<
     this._action = action;
   }
 
-  description(description: string): Command<TOptions, TPositionalArguments> {
+  description(description: string): this {
     this._description = description;
     return this;
   }
@@ -101,22 +101,25 @@ export class Command<
 
   validation<TShape extends GenerateZodShape<TOptions, TPositionalArguments>>(
     validation: (parsed: z.infer<ZodObject<TShape>>) => true | string
-  ): Command<TOptions, TPositionalArguments> {
+  ): this {
     this._validation = validation as ValidateCallback<ZodRawShape>;
     return this;
   }
 
   action<TShape extends GenerateZodShape<TOptions, TPositionalArguments>>(
     action: (parsed: z.infer<ZodObject<TShape>>) => void
-  ): Command<TOptions, TPositionalArguments> {
+  ): this {
     this._action = action as ActionCallback<ZodRawShape>;
     return this;
   }
 
   toInternalCommand(): InternalCommand {
     this._validateMultipleCommands();
+    if (this._name === undefined) {
+      throw new Error("name is required for command");
+    }
     return {
-      name: this._name as string,
+      name: this._name,
       description: this._description,
       options: helper.generateInternalOptions(this._options),
       positionalArgs: helper.generateInternalPositionalArguments(
@@ -150,13 +153,17 @@ export class Command<
     validation?: ValidateCallback<ZodRawShape>;
   } {
     this._validateMultipleCommands();
+    const action = this._action;
+    if (action === undefined) {
+      throw new Error("action is required for command");
+    }
 
     const shape = helper.generateZodShape(this._options, this._positionalArgs);
 
     return {
       shape,
       internalCommand: this.toInternalCommand(),
-      action: this._action as ActionCallback<ZodRawShape>,
+      action,
       validation: this._validation,
     };
   }

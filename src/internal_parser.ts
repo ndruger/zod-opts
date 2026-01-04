@@ -518,7 +518,10 @@ export function parseMultipleCommands({
   }
   const foundCommand = commands.find(
     (command) => command.name === searchResult.commandName
-  ) as InternalCommand;
+  );
+  if (foundCommand === undefined) {
+    throw new ParseError(`Unknown command: ${searchResult.commandName ?? ""}`);
+  }
   let parsed;
   try {
     parsed = parse({

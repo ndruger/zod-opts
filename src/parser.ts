@@ -73,17 +73,17 @@ export class Parser<
     this._handler = handler;
   }
 
-  name(name: string): Parser<TOptions, TPositionalArguments> {
+  name(name: string): this {
     this._name = name;
     return this;
   }
 
-  version(version: string): Parser<TOptions, TPositionalArguments> {
+  version(version: string): this {
     this._version = version;
     return this;
   }
 
-  description(description: string): Parser<TOptions, TPositionalArguments> {
+  description(description: string): this {
     this._description = description;
     return this;
   }
@@ -124,14 +124,14 @@ export class Parser<
         | ParseResultHelp
         | ParseResultVersion
     ) => void
-  ): Parser<TOptions, TPositionalArguments> {
+  ): this {
     this._handler = handler as Handler<ZodRawShape>;
     return this;
   }
 
   validation<TShape extends GenerateZodShape<TOptions, TPositionalArguments>>(
     validation: (parsed: z.infer<ZodObject<TShape>>) => true | string
-  ): Parser<TOptions, TPositionalArguments> {
+  ): this {
     this._validation = validation as ValidateCallback<ZodRawShape>;
     return this;
   }
@@ -160,7 +160,7 @@ export class Parser<
       ZodObject<GenerateZodShape<TOptions, TPositionalArguments>>
     >
   >(args?: string[]): T {
-    const validArgs = args !== undefined ? args : process.argv.slice(2);
+    const validArgs = args ?? process.argv.slice(2);
 
     const {
       _options: options,
@@ -240,7 +240,7 @@ export class Parser<
   ): { success: true; value: T } | { success: false; error: ParseResultError } {
     const result = z.object(shape).safeParse(prevResult.parsed);
     if (!result.success) {
-      const firstError: z.ZodIssue = result.error.errors[0];
+      const firstError: z.ZodIssue = result.error.issues[0];
       return {
         success: false,
         error: {

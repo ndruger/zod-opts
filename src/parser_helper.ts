@@ -31,15 +31,11 @@ export function generateZodShape(
   positionalArgs?: PositionalArguments
 ): z.ZodRawShape {
   const optionShape = Object.fromEntries(
-    Object.entries(options === undefined ? {} : options)
+    Object.entries(options ?? {})
       .map(([name, { type }]) => {
         return [name, type];
       })
-      .concat(
-        positionalArgs === undefined
-          ? []
-          : positionalArgs.map((option) => [option.name, option.type])
-      )
+      .concat(positionalArgs?.map((option) => [option.name, option.type]) ?? [])
   );
   return optionShape;
 }

@@ -15,7 +15,8 @@ export function mockConsole(
 
 export function mockExit(): jest.SpiedFunction<typeof process.exit> {
   return jest.spyOn(process, "exit").mockImplementation((code) => {
-    throw new Error(`process.exit: ${code as number}`);
+    const exitCode = typeof code === "number" ? code : 0;
+    throw new Error(`process.exit: ${exitCode}`);
   });
 }
 
@@ -32,7 +33,7 @@ export function expectExit0(expectedMessage: string, f: () => void): void {
 }
 
 export function expectProcessExit(
-  expectedMessage: string,
+  expectedMessage: string | RegExp,
   exitCode: number,
   f: () => void
 ): void {
@@ -41,7 +42,11 @@ export function expectProcessExit(
   expect(f).toThrow(/process.exit/);
 
   const logText = mockedConsoleError.mock.calls.flat().join("");
-  expect(logText).toContain(expectedMessage);
+  if (typeof expectedMessage === "string") {
+    expect(logText).toContain(expectedMessage);
+  } else {
+    expect(logText).toMatch(expectedMessage);
+  }
   expect(mockedExit).toHaveBeenCalledWith(exitCode);
   mockedConsoleError.mockRestore();
   mockedExit.mockRestore();

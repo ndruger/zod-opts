@@ -424,7 +424,7 @@ Options:
 
   test("error on validation()", () => {
     expectProcessExit(
-      "String must contain at least 10 character(s): opt1",
+      /(String must contain at least 10 character|Too small: expected string to have >=10 character).*: opt1/,
       1,
       () => {
         parser()
@@ -443,17 +443,12 @@ Options:
               })
           )
           ._internalHandler((result) => {
-            expect(result).toEqual({
-              commandName: "command1",
-              type: "error",
-              error: new ParseError(
-                "String must contain at least 10 character(s): opt1"
-              ),
-              help: expect.stringContaining(
-                "Usage: scriptNameA command1 [options]"
-              ),
-              exitCode: 1,
-            });
+            expect(result.commandName).toBe("command1");
+            expect(result.type).toBe("error");
+            expect(result.exitCode).toBe(1);
+            expect((result as { error: Error }).error.message).toMatch(
+              /(String must contain at least 10 character|Too small: expected string to have >=10 character).*: opt1/
+            );
           })
           .parse(["command1", "--opt1", "short"]);
       }

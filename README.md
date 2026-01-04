@@ -12,6 +12,7 @@ A library that simplifies the process of parsing and validating command-line arg
 
 - [ZodOpts](#zodopts)
   - [Installation](#installation)
+  - [Zod Compatibility](#zod-compatibility)
   - [Quick Start](#quick-start)
   - [Options](#options)
     - [Various option types](#various-option-types)
@@ -39,6 +40,38 @@ npm install zod-opts # npm
 
 yarn add zod-opts # yarn
 ```
+
+## Zod Compatibility
+
+zod-opts supports both Zod v3 (3.25.0+) and Zod v4.
+
+### Behavioral Differences
+
+There is a behavioral difference between Zod v3 and v4 when using `.default().optional()`:
+
+```ts
+const schema = z.string().default("foo").optional();
+
+// Zod v3: schema.parse(undefined) → undefined
+// Zod v4: schema.parse(undefined) → "foo"
+```
+
+| Pattern | Zod v3 | Zod v4 |
+|---------|--------|--------|
+| `z.string().optional()` | `undefined` | `undefined` |
+| `z.string().default("foo")` | `"foo"` | `"foo"` |
+| `z.string().optional().default("foo")` | `"foo"` | `"foo"` |
+| `z.string().default("foo").optional()` | `undefined` | `"foo"` |
+
+In Zod v4, `.default()` always applies regardless of `.optional()`. If you're migrating from v3 to v4, review any usage of `.default().optional()` as the behavior has changed.
+
+**Recommendation**: Use `.default("foo")` alone if you want a default value. The `.optional()` suffix is redundant in Zod v4.
+
+### Changes introduced for Zod v4 support
+
+- Zod schema inspection now uses the compatibility layer to recognize v4-specific shapes (e.g., enums defined via `entries`, arrays with `element`), so more v4 schemas are accepted without code changes.
+- Optional/default handling is stricter: defaults wrapped in `optional`/`effects`/`pipe`/`nullable`/`readonly` are resolved before building option metadata, matching Zod v4 behavior.
+- Unknown commands/options/positionals now surface clear `ParseError` messages early; validation no longer silently assumes definitions exist. This improves feedback for mis-typed flags when running under either Zod v3 or v4.
 
 ## Quick Start
 

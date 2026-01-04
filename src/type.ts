@@ -1,30 +1,10 @@
 import {
   type z,
-  type ZodArrayDef,
-  type ZodBooleanDef,
-  type ZodDefaultDef,
-  type ZodEffectsDef,
-  type ZodEnumDef,
-  type ZodNumberDef,
   type ZodObject,
-  type ZodOptionalDef,
   type ZodRawShape,
-  type ZodStringDef,
   type ZodType,
   type ZodTypeAny,
-  type ZodUnionDef,
 } from "zod";
-
-export type ZodDef =
-  | ZodNumberDef
-  | ZodStringDef
-  | ZodUnionDef
-  | ZodBooleanDef
-  | ZodEnumDef
-  | ZodArrayDef
-  | ZodOptionalDef
-  | ZodDefaultDef
-  | ZodEffectsDef;
 
 export const BASE_TYPES = ["number", "string", "boolean"] as const;
 export type BaseType = (typeof BASE_TYPES)[number];

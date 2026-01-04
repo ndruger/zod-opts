@@ -57,17 +57,17 @@ export class CommandParser {
     }
   }
 
-  name(name: string): CommandParser {
+  name(name: string): this {
     this._name = name;
     return this;
   }
 
-  version(version: string): CommandParser {
+  version(version: string): this {
     this._version = version;
     return this;
   }
 
-  description(description: string): CommandParser {
+  description(description: string): this {
     this._description = description;
     return this;
   }
@@ -80,12 +80,12 @@ export class CommandParser {
         | ParseResultHelp
         | ParseResultVersion
     ) => void
-  ): CommandParser {
+  ): this {
     this._handler = handler as Handler<z.ZodRawShape>;
     return this;
   }
 
-  subcommand(command: Command): CommandParser {
+  subcommand(command: Command): this {
     if (
       this._commands.some(
         (c) => c.toInternalCommand().name === command.toInternalCommand().name
@@ -120,7 +120,10 @@ export class CommandParser {
 
     const foundCommand = this._commands.find(
       (command) => command.toInternalCommand().name === commandName
-    ) as Command; // CommandParser wll be created by subcommand() that ensures that the command exists
+    );
+    if (foundCommand === undefined) {
+      throw new Error(`Command not found: ${commandName ?? ""}`);
+    }
 
     return generateCommandHelp({
       command: foundCommand.toInternalCommand(),
@@ -148,6 +151,9 @@ export class CommandParser {
     const usedCommandIndex = internalCommands.findIndex(
       (command) => internalResult.commandName === command.name
     );
+    if (usedCommandIndex < 0) {
+      throw new Error(`Command not found: ${internalResult.commandName ?? ""}`);
+    }
     const { shape, action, validation } = commands[usedCommandIndex];
 
     const zodParseResult = this._zodParse(internalResult, shape);
@@ -257,12 +263,13 @@ export class CommandParser {
     commands: InternalCommand[],
     scriptName: string
   ): ParseResultMatch<object> {
+    const commandName = parsed.commandName ?? selectedCommand.name;
     const { options: validOptions, positionalArgs: validPositionalArguments } =
       validateMultipleCommands(
         parsed,
         selectedCommand.options,
         selectedCommand.positionalArgs,
-        parsed.commandName as string
+        commandName
       );
     debugLog("createInternalParserAndParse", {
       validOptions: JSON.stringify(validOptions),
@@ -281,7 +288,7 @@ export class CommandParser {
         ...validOptionMap,
         ...validPositionalArgMap,
       },
-      commandName: parsed.commandName,
+      commandName,
       help: this._generateParseHelp(commands, selectedCommand, scriptName),
     };
   }
@@ -299,7 +306,7 @@ export class CommandParser {
       if (args.length === 0) {
         throw new ParseError("No command specified");
       }
-      
+
       const parsed = parseMultipleCommands({
         args,
         commands,
@@ -318,9 +325,12 @@ export class CommandParser {
           scriptName
         );
       }
+      if (selectedCommand === undefined) {
+        throw new Error(`Command not found: ${parsed.commandName ?? ""}`);
+      }
       return this._handleInternalParseMatch(
         parsed,
-        selectedCommand as InternalCommand,
+        selectedCommand,
         commands,
         scriptName
       );
@@ -339,7 +349,7 @@ export class CommandParser {
   ): { success: true; value: T } | { success: false; error: ParseResultError } {
     const result = z.object(shape).safeParse(prevResult.parsed);
     if (!result.success) {
-      const firstError: z.ZodIssue = result.error.errors[0];
+      const firstError: z.ZodIssue = result.error.issues[0];
       return {
         success: false,
         error: {
