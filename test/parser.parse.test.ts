@@ -879,6 +879,20 @@ describe("type", () => {
         }>();
       });
 
+      test("default(['default']) with arg", () => {
+        const parsed = parser()
+          .options({
+            opt: {
+              type: z.array(z.string()).default(["default1", "default2"]),
+            },
+          })
+          .parse(["--opt", "str1"]);
+        expect(parsed).toEqual({ opt: ["str1"] });
+        expectTypeOf(parsed).toEqualTypeOf<{
+          opt: string[];
+        }>();
+      });
+
       test("when splitted", () => {
         const parsed = parser()
           .options({
@@ -1026,6 +1040,21 @@ describe("type", () => {
           ])
           .parse([]);
         expect(parsed).toEqual({ pos: ["default1", "default2"] });
+        expectTypeOf(parsed).toEqualTypeOf<{
+          pos: string[];
+        }>();
+      });
+
+      test("default(['default']) with arg", () => {
+        const parsed = parser()
+          .args([
+            {
+              name: "pos",
+              type: z.array(z.string()).default(["default1", "default2"]),
+            },
+          ])
+          .parse(["str1"]);
+        expect(parsed).toEqual({ pos: ["str1"] });
         expectTypeOf(parsed).toEqualTypeOf<{
           pos: string[];
         }>();
