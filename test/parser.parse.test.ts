@@ -1382,6 +1382,7 @@ describe("_internalHandler()", () => {
           expect(result).toEqual({
             type: "error",
             error: new ParseError("Invalid option: -invalid=10"),
+            reason: "parse",
             exitCode: 1,
             help: expect.stringContaining("Usage: scriptNameA"),
           });
@@ -1389,6 +1390,7 @@ describe("_internalHandler()", () => {
             expectTypeOf(result).toEqualTypeOf<{
               type: "error";
               error: Error;
+              reason: "parse" | "schema" | "validation";
               help: string;
               exitCode: 1;
               commandName?: string;
@@ -1410,6 +1412,7 @@ describe("_internalHandler()", () => {
           expect(result).toEqual({
             type: "error",
             error: new ParseError("Required option is missing: opt1"),
+            reason: "parse",
             exitCode: 1,
             help: expect.stringContaining("Usage: scriptNameA"),
           });
@@ -1417,6 +1420,7 @@ describe("_internalHandler()", () => {
             expectTypeOf(result).toEqualTypeOf<{
               type: "error";
               error: Error;
+              reason: "parse" | "schema" | "validation";
               help: string;
               exitCode: 1;
               commandName?: string;

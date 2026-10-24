@@ -8,6 +8,7 @@ import { ParseError } from "./error";
 import { generateGlobalHelp } from "./help";
 import * as helper from "./parser_helper";
 import type {
+  ExitCallback,
   GenerateZodShape,
   Handler,
   Narrow,
@@ -29,6 +30,7 @@ interface ParserState {
   positionalArgs: PositionalArguments;
   validation?: ValidateCallback<ZodRawShape>;
   handler?: Handler<ZodRawShape>;
+  onExit?: ExitCallback;
 }
 
 export class Parser<
@@ -42,6 +44,7 @@ export class Parser<
   private readonly _positionalArgs: PositionalArguments = [];
   private _validation: ValidateCallback<ZodRawShape> | undefined;
   private _handler: Handler<ZodRawShape> | undefined;
+  private _onExit: ExitCallback | undefined;
 
   constructor({
     name,
@@ -51,6 +54,7 @@ export class Parser<
     positionalArgs,
     validation,
     handler,
+    onExit,
   }: {
     name?: string;
     version?: string;
@@ -59,6 +63,7 @@ export class Parser<
     positionalArgs?: Narrow<PositionalArguments>;
     validation?: ValidateCallback<ZodRawShape>;
     handler?: Handler<ZodRawShape>;
+    onExit?: ExitCallback;
   } = {}) {
     this._name = name;
     this._version = version;
@@ -71,6 +76,7 @@ export class Parser<
     }
     this._validation = validation;
     this._handler = handler;
+    this._onExit = onExit;
   }
 
   name(name: string): this {
@@ -133,6 +139,11 @@ export class Parser<
     validation: (parsed: z.infer<ZodObject<TShape>>) => true | string
   ): this {
     this._validation = validation as ValidateCallback<ZodRawShape>;
+    return this;
+  }
+
+  onExit(onExit: ExitCallback): this {
+    this._onExit = onExit;
     return this;
   }
 
@@ -228,6 +239,7 @@ export class Parser<
       return {
         type: "error",
         error: new ParseError(validationResult),
+        reason: "validation",
         help,
         exitCode: 1,
       };
@@ -249,6 +261,7 @@ export class Parser<
             `${firstError.message}: ${firstError.path.join("")}`,
             result.error
           ),
+          reason: "schema",
           help: prevResult.help,
           exitCode: 1,
         },
@@ -263,7 +276,8 @@ export class Parser<
     if (this._handler != null) {
       this._handler(handlerArg);
     }
-    util.errorExit(handlerArg, this._version);
+    const exitCode = util.resolveExitCode(handlerArg, this._onExit);
+    util.errorExit(handlerArg, this._version, exitCode);
   }
 
   subcommand(command: Command): CommandParser {
@@ -287,6 +301,7 @@ export class Parser<
       positionalArgs: this._positionalArgs,
       validation: this._validation,
       handler: this._handler,
+      onExit: this._onExit,
     };
   }
 
