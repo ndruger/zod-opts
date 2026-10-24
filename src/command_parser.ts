@@ -173,7 +173,8 @@ export class CommandParser {
     const validationError = this._validateByCustomValidation(
       validation,
       zodParseResult.value,
-      internalResult.help
+      internalResult.help,
+      internalResult.commandName
     );
     if (validationError !== undefined) {
       this._handleAndExit(validationError);
@@ -383,7 +384,8 @@ export class CommandParser {
   private _validateByCustomValidation<T extends Record<string, unknown>>(
     validation: ValidateCallback<ZodRawShape> | undefined,
     value: T,
-    help: string
+    help: string,
+    commandName: string | undefined
   ): ParseResultError | undefined {
     if (validation === undefined) {
       return undefined;
@@ -405,6 +407,7 @@ export class CommandParser {
         reason: "validation",
         help,
         exitCode: 1,
+        commandName,
       };
     }
   }
