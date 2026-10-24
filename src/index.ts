@@ -6,7 +6,9 @@ export type {
   ExitCallback,
   ExitResult,
   ParseErrorReason,
+  ParseResult,
   ParseResultError,
   ParseResultHelp,
+  ParseResultMatch,
   ParseResultVersion,
 } from "./type";
