@@ -567,7 +567,7 @@ describe("optionToInternal()", () => {
           }),
           "name1"
         );
-      }).toThrowError(new Error('Unsupported default value: {"a":10}'));
+      }).toThrow(new Error('Unsupported default value: {"a":10}'));
     });
 
     test("invalid item type of array", () => {
@@ -578,7 +578,7 @@ describe("optionToInternal()", () => {
           }),
           "name1"
         );
-      }).toThrowError(new Error("Unsupported default value: [true,false]"));
+      }).toThrow(new Error("Unsupported default value: [true,false]"));
     });
 
     test("multiple type items of array", () => {
@@ -591,7 +591,7 @@ describe("optionToInternal()", () => {
           }),
           "name1"
         );
-      }).toThrowError(new Error('Unsupported default value: [10,"false"]'));
+      }).toThrow(new Error('Unsupported default value: [10,"false"]'));
     });
 
     test("enum values from entries map", () => {

@@ -484,7 +484,7 @@ describe("subcommand()", () => {
             ])
         )
         .parse(["command1", "--opt1", "str1", "pos1"]);
-    }).toThrowError("action is required for command");
+    }).toThrow("action is required for command");
   });
 
   test("throws runtime error on duplicated command name", () => {
@@ -512,7 +512,7 @@ describe("subcommand()", () => {
             .action(() => {})
         )
         .parse(["command1", "--opt1", "str1", "pos1"]);
-    }).toThrowError("Duplicated command name: command1");
+    }).toThrow("Duplicated command name: command1");
   });
 });
 
