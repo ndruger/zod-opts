@@ -75,7 +75,7 @@ describe("onExit()", () => {
             opt2: { type: z.number() },
           })
           .validation((parsed) =>
-            parsed.opt1 === parsed.opt2 ? "must be different" : true
+            parsed.opt1 === parsed.opt2 ? "must be different" : true,
           )
           .onExit((result) => {
             if (result.type === "error") {
@@ -151,7 +151,7 @@ describe("onExit()", () => {
             .onExit(() => code)
             .parse([]);
         }).toThrow(/Invalid exit code/);
-      }
+      },
     );
 
     test.each([0, 255])("accepts boundary exit code: %p", (code) => {
@@ -191,7 +191,7 @@ describe("onExit()", () => {
           .subcommand(
             command("command1")
               .options({ opt1: { type: z.string() } })
-              .action(() => {})
+              .action(() => {}),
           )
           .onExit((result) => {
             results.push(result);
@@ -225,7 +225,7 @@ describe("onExit()", () => {
             command("command1")
               .options({ opt1: { type: z.string() } })
               .validation(() => "invalid opt1")
-              .action(() => {})
+              .action(() => {}),
           )
           .onExit((result) => {
             results.push(result);
@@ -249,7 +249,7 @@ describe("onExit()", () => {
           .subcommand(
             command("command1")
               .options({ opt1: { type: z.string().min(10) } })
-              .action(() => {})
+              .action(() => {}),
           )
           .onExit((result) => {
             results.push(result);

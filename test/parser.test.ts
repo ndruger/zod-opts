@@ -56,7 +56,7 @@ describe("options()", () => {
           })
           .parse([]);
       }).toThrow(
-        "Invalid option name. Supported pattern is /^[A-Za-z0-9_]+[A-Za-z0-9_-]*$/: --opt1"
+        "Invalid option name. Supported pattern is /^[A-Za-z0-9_]+[A-Za-z0-9_-]*$/: --opt1",
       );
     });
 
@@ -68,7 +68,7 @@ describe("options()", () => {
           })
           .parse([]);
       }).toThrow(
-        "Invalid option alias. Supported pattern is /^[A-Za-z0-9_]+$/: -a"
+        "Invalid option alias. Supported pattern is /^[A-Za-z0-9_]+$/: -a",
       );
     });
   });
@@ -87,7 +87,7 @@ describe("args()", () => {
           ])
           .parse([]);
       }).toThrow(
-        "Invalid positional argument name. Supported pattern is /^[A-Za-z0-9_]+[A-Za-z0-9_-]*$/: --arg1"
+        "Invalid positional argument name. Supported pattern is /^[A-Za-z0-9_]+[A-Za-z0-9_-]*$/: --arg1",
       );
     });
 

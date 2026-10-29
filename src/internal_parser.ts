@@ -27,12 +27,12 @@ function optionRequiresValue(option: InternalOption): boolean {
 
 export function findOptionByPrefixedName(
   options: InternalOption[],
-  prefixedName: string
+  prefixedName: string,
 ): [InternalOption, boolean] | undefined {
   const option = options.find(
     (opt) =>
       `--${opt.name}` === prefixedName ||
-      (opt.alias !== undefined ? `-${opt.alias}` === prefixedName : false)
+      (opt.alias !== undefined ? `-${opt.alias}` === prefixedName : false),
   );
   if (option != null) {
     return [option, false];
@@ -58,7 +58,7 @@ function validateOptionArguments(
   option: InternalOption,
   isNegative: boolean,
   optionArgCandidates: string[],
-  isForcedValue: boolean
+  isForcedValue: boolean,
 ): ValidateOptionArgumentsResult {
   if (optionRequiresValue(option) && optionArgCandidates.length === 0) {
     // ex. --foo and foo is string
@@ -82,8 +82,8 @@ function validateOptionArguments(
   const [value, shift] = !optionRequiresValue(option)
     ? [undefined, 0]
     : option.isArray
-    ? [optionArgCandidates, optionArgCandidates.length]
-    : [optionArgCandidates[0], 1];
+      ? [optionArgCandidates, optionArgCandidates.length]
+      : [optionArgCandidates[0], 1];
 
   return {
     ok: true,
@@ -99,7 +99,7 @@ function removeOptionPrefix(prefixedName: string): string {
 function parseLongNameOptionArgument(
   options: InternalOption[],
   arg: string,
-  optionArgCandidates: string[]
+  optionArgCandidates: string[],
 ): { candidate: Candidate; shift: number } {
   const match = arg.match(/^(?<prefixedName>[^=]+)(=(?<forcedValue>.*))?$/); // forcedValue may be empty string
 
@@ -111,7 +111,7 @@ function parseLongNameOptionArgument(
     const result = findOptionByPrefixedName(options, prefixedName);
     if (result === undefined) {
       throw new ParseError(
-        `Invalid option: ${removeOptionPrefix(prefixedName)}`
+        `Invalid option: ${removeOptionPrefix(prefixedName)}`,
       );
     }
     const [option, isNegative] = result;
@@ -119,7 +119,7 @@ function parseLongNameOptionArgument(
       option,
       isNegative,
       [forcedValue],
-      true
+      true,
     );
     if (!validateResult.ok) {
       throw new ParseError(`${validateResult.message}: ${option.name}`);
@@ -136,7 +136,7 @@ function parseLongNameOptionArgument(
     const result = findOptionByPrefixedName(options, prefixedName);
     if (result === undefined) {
       throw new ParseError(
-        `Invalid option: ${removeOptionPrefix(prefixedName)}`
+        `Invalid option: ${removeOptionPrefix(prefixedName)}`,
       );
     }
     const [option, isNegative] = result;
@@ -144,7 +144,7 @@ function parseLongNameOptionArgument(
       option,
       isNegative,
       optionArgCandidates,
-      false
+      false,
     );
     if (!validateResult.ok) {
       throw new ParseError(`${validateResult.message}: ${option.name}`);
@@ -171,7 +171,7 @@ function parseLongNameOptionArgument(
 function parseShortNameMultipleOptionArgument(
   options: InternalOption[],
   arg: string,
-  optionArgCandidates: string[]
+  optionArgCandidates: string[],
 ): { candidates: Candidate[]; shift: number } {
   let shift = 1;
   const candidates: Candidate[] = [];
@@ -232,7 +232,7 @@ function parseShortNameMultipleOptionArgument(
 function parseShortNameOptionArgument(
   options: InternalOption[],
   arg: string,
-  optionArgCandidates: string[]
+  optionArgCandidates: string[],
 ): { candidates: Candidate[]; shift: number } {
   const match = arg.match(/^(?<prefixedName>[^=]+)$/);
 
@@ -251,7 +251,7 @@ function parseShortNameOptionArgument(
     return parseShortNameMultipleOptionArgument(
       options,
       prefixedName,
-      optionArgCandidates
+      optionArgCandidates,
     );
   }
   const [option] = result;
@@ -259,7 +259,7 @@ function parseShortNameOptionArgument(
     option,
     false,
     optionArgCandidates,
-    false
+    false,
   );
   if (!validateResult.ok) {
     throw new ParseError(`${validateResult.message}: ${option.name}`);
@@ -279,13 +279,13 @@ function parseShortNameOptionArgument(
 function parseOptionArgument(
   options: InternalOption[],
   arg: string,
-  optionArgCandidates: string[]
+  optionArgCandidates: string[],
 ): { candidates: Candidate[]; shift: number } {
   if (arg.startsWith("--")) {
     const { candidate, shift } = parseLongNameOptionArgument(
       options,
       arg,
-      optionArgCandidates
+      optionArgCandidates,
     );
     return {
       candidates: [candidate],
@@ -298,7 +298,7 @@ function parseOptionArgument(
 export function pickPositionalArguments(
   targets: string[],
   options: InternalOption[],
-  hasDoubleDash: boolean
+  hasDoubleDash: boolean,
 ): { positionalArgs: string[]; shift: number } {
   if (hasDoubleDash) {
     return { positionalArgs: targets, shift: targets.length };
@@ -312,7 +312,7 @@ export function pickPositionalArguments(
 
 export function parsePositionalArguments(
   args: string[],
-  positionalArgs: InternalPositionalArgument[]
+  positionalArgs: InternalPositionalArgument[],
 ): PositionalCandidate[] {
   let i = 0;
   let candidates: PositionalCandidate[] = [];
@@ -349,7 +349,7 @@ export type CommandParsed = Parsed & {
 
 function pickNextNonOptionArgumentCandidates(
   targets: string[],
-  options: InternalOption[]
+  options: InternalOption[],
 ): string[] {
   const foundIndex = targets.findIndex((arg) => likesOptionArg(arg, options));
   if (foundIndex === -1) {
@@ -360,7 +360,7 @@ function pickNextNonOptionArgumentCandidates(
 
 export function likesOptionArg(
   arg: string,
-  options: InternalOption[]
+  options: InternalOption[],
 ): boolean {
   if (arg === "--") {
     return false;
@@ -407,12 +407,12 @@ function processDoubleDash(state: State): State {
 function processOption(
   state: State,
   args: string[],
-  options: InternalOption[]
+  options: InternalOption[],
 ): State {
   const arg = args[state.index];
   const picked = pickNextNonOptionArgumentCandidates(
     args.slice(state.index + 1),
-    options
+    options,
   );
 
   const { candidates, shift } = parseOptionArgument(options, arg, picked);
@@ -427,7 +427,7 @@ function processPositionalArguments(
   state: State,
   args: string[],
   options: InternalOption[],
-  positionalArgs: InternalPositionalArgument[]
+  positionalArgs: InternalPositionalArgument[],
 ): State {
   if (state.positionalCandidates.length !== 0) {
     throw new ParseError("Positional arguments specified twice");
@@ -435,7 +435,7 @@ function processPositionalArguments(
   const { positionalArgs: picked, shift } = pickPositionalArguments(
     args.slice(state.index),
     options,
-    state.hasDoubleDash
+    state.hasDoubleDash,
   );
   const positionalCandidates = parsePositionalArguments(picked, positionalArgs);
 
@@ -463,7 +463,7 @@ interface ParseToFindCommandResult {
 
 function parseToFindCommand(
   args: string[],
-  commandNames: string[]
+  commandNames: string[],
 ): ParseToFindCommandResult {
   const state: ParseToFindCommandResult = {
     index: 0,
@@ -505,7 +505,7 @@ export function parseMultipleCommands({
 }): CommandParsed {
   const searchResult = parseToFindCommand(
     args,
-    commands.map((command) => command.name)
+    commands.map((command) => command.name),
   );
   if (searchResult.isHelp || searchResult.isVersion) {
     return {
@@ -517,7 +517,7 @@ export function parseMultipleCommands({
     };
   }
   const foundCommand = commands.find(
-    (command) => command.name === searchResult.commandName
+    (command) => command.name === searchResult.commandName,
   );
   if (foundCommand === undefined) {
     throw new ParseError(`Unknown command: ${searchResult.commandName ?? ""}`);
@@ -577,7 +577,7 @@ export function parse({
           state,
           args,
           options,
-          positionalArgs
+          positionalArgs,
         );
       }
     }

@@ -16,8 +16,8 @@ describe("validateCandidateValue()", () => {
       validateCandidateValue(
         createInternalOption({ type: "string" }),
         "str",
-        false
-      )
+        false,
+      ),
     ).toEqual({
       value: "str",
     });
@@ -26,8 +26,8 @@ describe("validateCandidateValue()", () => {
       validateCandidateValue(
         createInternalOption({ type: "string" }),
         "",
-        false
-      )
+        false,
+      ),
     ).toEqual({
       value: "",
     });
@@ -36,8 +36,8 @@ describe("validateCandidateValue()", () => {
       validateCandidateValue(
         createInternalOption({ type: "number" }),
         "10",
-        false
-      )
+        false,
+      ),
     ).toEqual({
       value: 10,
     });
@@ -46,8 +46,8 @@ describe("validateCandidateValue()", () => {
       validateCandidateValue(
         createInternalOption({ type: "number" }),
         "-10.1",
-        false
-      )
+        false,
+      ),
     ).toEqual({
       value: -10.1,
     });
@@ -56,8 +56,8 @@ describe("validateCandidateValue()", () => {
       validateCandidateValue(
         createInternalOption({ type: "boolean" }),
         undefined,
-        false
-      )
+        false,
+      ),
     ).toEqual({
       value: true,
     });
@@ -66,8 +66,8 @@ describe("validateCandidateValue()", () => {
       validateCandidateValue(
         createInternalOption({ type: "boolean" }),
         undefined,
-        true
-      )
+        true,
+      ),
     ).toEqual({
       value: false,
     });
@@ -78,32 +78,32 @@ describe("validateCandidateValue()", () => {
       validateCandidateValue(
         createInternalOption({ type: "string" }),
         undefined,
-        false
-      )
+        false,
+      ),
     ).toEqual(undefined);
 
     expect(
       validateCandidateValue(
         createInternalOption({ type: "number" }),
         undefined,
-        false
-      )
+        false,
+      ),
     ).toEqual(undefined);
 
     expect(
       validateCandidateValue(
         createInternalOption({ type: "number" }),
         "str",
-        false
-      )
+        false,
+      ),
     ).toEqual(undefined);
 
     expect(
       validateCandidateValue(
         createInternalOption({ type: "boolean" }),
         "str",
-        false
-      )
+        false,
+      ),
     ).toEqual(undefined);
   });
 });
@@ -113,8 +113,8 @@ describe("validatePositionalCandidateValue()", () => {
     expect(
       validatePositionalCandidateValue(
         createInternalPositionalArgument({ type: "string" }),
-        "str"
-      )
+        "str",
+      ),
     ).toEqual({
       value: "str",
     });
@@ -122,8 +122,8 @@ describe("validatePositionalCandidateValue()", () => {
     expect(
       validatePositionalCandidateValue(
         createInternalPositionalArgument({ type: "number" }),
-        "10"
-      )
+        "10",
+      ),
     ).toEqual({
       value: 10,
     });
@@ -131,8 +131,8 @@ describe("validatePositionalCandidateValue()", () => {
     expect(
       validatePositionalCandidateValue(
         createInternalPositionalArgument({ type: "number" }),
-        "-10.1"
-      )
+        "-10.1",
+      ),
     ).toEqual({
       value: -10.1,
     });
@@ -140,8 +140,8 @@ describe("validatePositionalCandidateValue()", () => {
     expect(
       validatePositionalCandidateValue(
         createInternalPositionalArgument({ type: "string", isArray: true }),
-        ["str1", "str2"]
-      )
+        ["str1", "str2"],
+      ),
     ).toEqual({
       value: ["str1", "str2"],
     });
@@ -149,8 +149,8 @@ describe("validatePositionalCandidateValue()", () => {
     expect(
       validatePositionalCandidateValue(
         createInternalPositionalArgument({ type: "number", isArray: true }),
-        ["10", "-10.1"]
-      )
+        ["10", "-10.1"],
+      ),
     ).toEqual({
       value: [10, -10.1],
     });
@@ -160,29 +160,29 @@ describe("validatePositionalCandidateValue()", () => {
     expect(
       validatePositionalCandidateValue(
         createInternalPositionalArgument({ type: "string" }),
-        ""
-      )
+        "",
+      ),
     ).toEqual({ value: "" });
 
     expect(
       validatePositionalCandidateValue(
         createInternalPositionalArgument({ type: "number" }),
-        "str"
-      )
+        "str",
+      ),
     ).toEqual(undefined);
 
     expect(
       validatePositionalCandidateValue(
         createInternalPositionalArgument({ type: "number", isArray: true }),
-        ["str"]
-      )
+        ["str"],
+      ),
     ).toEqual(undefined);
 
     expect(
       validatePositionalCandidateValue(
         createInternalPositionalArgument({ type: "number", isArray: true }),
-        ["10", ""]
-      )
+        ["10", ""],
+      ),
     ).toEqual(undefined);
   });
 });

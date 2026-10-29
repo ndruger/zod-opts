@@ -42,7 +42,7 @@ describe("parse()", () => {
               opt1: string;
               pos1: string;
             }>();
-          })
+          }),
       )
       .parse(["command1", "--opt1", "str1", "pos1"]);
   });
@@ -69,7 +69,7 @@ describe("parse()", () => {
               opt1: string;
               pos1: string;
             }>();
-          })
+          }),
       )
       .subcommand(
         command("command2")
@@ -91,7 +91,7 @@ describe("parse()", () => {
               opt2: string;
               pos2: string;
             }>();
-          })
+          }),
       )
       .name("scriptNameA")
       .parse(["command2", "--opt2", "str1", "pos2"]);
@@ -110,7 +110,7 @@ describe("parse()", () => {
             })
             .action((_parsed) => {
               expect(1).toBe(0);
-            })
+            }),
         )
         .parse([]);
     });
@@ -137,7 +137,7 @@ describe("parse()", () => {
               expectTypeOf(parsed).toEqualTypeOf<{
                 opt1: string;
               }>();
-            })
+            }),
         )
         .parse(["command1", "--opt1", "str1"]);
     });
@@ -160,7 +160,7 @@ describe("parse()", () => {
               })
               .action((_parsed) => {
                 expect(1).toBe(0);
-              })
+              }),
           )
           .parse(["command1", "--opt1", "invalid"]);
       });
@@ -184,7 +184,7 @@ describe("parse()", () => {
               })
               .action((_parsed) => {
                 expect(1).toBe(0);
-              })
+              }),
           )
           .parse(["command1", "--opt1", "invalid"]);
       });
@@ -343,7 +343,7 @@ Options:
             })
             .action((_parsed) => {
               expect(1).toBe(0);
-            })
+            }),
         )
         ._internalHandler((result) => {
           expect(result).toEqual({
@@ -351,7 +351,7 @@ Options:
             error: new ParseError("Unknown command: missing_command"),
             reason: "parse",
             help: expect.stringContaining(
-              "Usage: scriptNameA [options] <command>"
+              "Usage: scriptNameA [options] <command>",
             ),
             exitCode: 1,
           });
@@ -374,7 +374,7 @@ Options:
             })
             .action((_parsed) => {
               expect(1).toBe(0);
-            })
+            }),
         )
         ._internalHandler((result) => {
           expect(result).toEqual({
@@ -383,7 +383,7 @@ Options:
             error: new ParseError("Invalid option: opt-missing"),
             reason: "parse",
             help: expect.stringContaining(
-              "Usage: scriptNameA command1 [options]"
+              "Usage: scriptNameA command1 [options]",
             ),
             exitCode: 1,
           });
@@ -407,7 +407,7 @@ Options:
             .args([])
             .action((_parsed) => {
               expect(1).toBe(0);
-            })
+            }),
         )
         ._internalHandler((result) => {
           expect(result).toEqual({
@@ -416,7 +416,7 @@ Options:
             error: new ParseError("Required option is missing: opt1"),
             reason: "parse",
             help: expect.stringContaining(
-              "Usage: scriptNameA command1 [options]"
+              "Usage: scriptNameA command1 [options]",
             ),
             exitCode: 1,
           });
@@ -443,22 +443,22 @@ Options:
               .args([])
               .action((_parsed) => {
                 expect(1).toBe(0);
-              })
+              }),
           )
           ._internalHandler((result) => {
             if (result.type !== "error") {
               throw new Error(
-                `unexpected non-error result in validation test: ${result.type}`
+                `unexpected non-error result in validation test: ${result.type}`,
               );
             }
             expect(result.commandName).toBe("command1");
             expect(result.exitCode).toBe(1);
             expect(result.error.message).toMatch(
-              /(String must contain at least 10 character|Too small: expected string to have >=10 character).*: opt1/
+              /(String must contain at least 10 character|Too small: expected string to have >=10 character).*: opt1/,
             );
           })
           .parse(["command1", "--opt1", "short"]);
-      }
+      },
     );
   });
 });
@@ -481,10 +481,10 @@ describe("subcommand()", () => {
                 name: "pos1",
                 type: z.string(),
               },
-            ])
+            ]),
         )
         .parse(["command1", "--opt1", "str1", "pos1"]);
-    }).toThrowError("action is required for command");
+    }).toThrow("action is required for command");
   });
 
   test("throws runtime error on duplicated command name", () => {
@@ -499,7 +499,7 @@ describe("subcommand()", () => {
                 description: "a",
               },
             })
-            .action(() => {})
+            .action(() => {}),
         )
         .subcommand(
           command("command1")
@@ -509,10 +509,10 @@ describe("subcommand()", () => {
                 description: "a",
               },
             })
-            .action(() => {})
+            .action(() => {}),
         )
         .parse(["command1", "--opt1", "str1", "pos1"]);
-    }).toThrowError("Duplicated command name: command1");
+    }).toThrow("Duplicated command name: command1");
   });
 });
 

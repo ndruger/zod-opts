@@ -35,7 +35,7 @@ interface ParserState {
 
 export class Parser<
   TOptions extends Options = {},
-  TPositionalArguments extends PositionalArguments = []
+  TPositionalArguments extends PositionalArguments = [],
 > {
   private _name: string | undefined;
   private _version: string | undefined;
@@ -95,11 +95,11 @@ export class Parser<
   }
 
   options<TNewOptions extends Options>(
-    options: TNewOptions
+    options: TNewOptions,
   ): Parser<TNewOptions, TPositionalArguments> {
     util.validateParamOptionsAndPositionalArguments(
       options,
-      this._positionalArgs
+      this._positionalArgs,
     );
     return new Parser<TNewOptions, TPositionalArguments>({
       ...this._currentState(),
@@ -108,11 +108,11 @@ export class Parser<
   }
 
   args<TNewPositionalArguments extends PositionalArguments>(
-    positionalArgs: Narrow<TNewPositionalArguments>
+    positionalArgs: Narrow<TNewPositionalArguments>,
   ): Parser<TOptions, TNewPositionalArguments> {
     util.validateParamOptionsAndPositionalArguments(
       this._options,
-      positionalArgs as TNewPositionalArguments
+      positionalArgs as TNewPositionalArguments,
     );
     return new Parser<TOptions, TNewPositionalArguments>({
       ...this._currentState(),
@@ -121,22 +121,22 @@ export class Parser<
   }
 
   _internalHandler<
-    TShape extends GenerateZodShape<TOptions, TPositionalArguments>
+    TShape extends GenerateZodShape<TOptions, TPositionalArguments>,
   >(
     handler: (
       arg0:
         | ParseResultMatch<z.infer<ZodObject<TShape>>>
         | ParseResultError
         | ParseResultHelp
-        | ParseResultVersion
-    ) => void
+        | ParseResultVersion,
+    ) => void,
   ): this {
     this._handler = handler as Handler<ZodRawShape>;
     return this;
   }
 
   validation<TShape extends GenerateZodShape<TOptions, TPositionalArguments>>(
-    validation: (parsed: z.infer<ZodObject<TShape>>) => true | string
+    validation: (parsed: z.infer<ZodObject<TShape>>) => true | string,
   ): this {
     this._validation = validation as ValidateCallback<ZodRawShape>;
     return this;
@@ -169,7 +169,7 @@ export class Parser<
   parse<
     T extends z.infer<
       ZodObject<GenerateZodShape<TOptions, TPositionalArguments>>
-    >
+    >,
   >(args?: string[]): T {
     const validArgs = args ?? process.argv.slice(2);
 
@@ -182,7 +182,7 @@ export class Parser<
     // Check support of options and positionalArgs before parsing args
     const shape = helper.generateZodShape(
       options,
-      positionalArgs
+      positionalArgs,
     ) as GenerateZodShape<TOptions, TPositionalArguments>;
 
     const internalResult = helper.createInternalParserAndParse({
@@ -199,7 +199,7 @@ export class Parser<
 
     const zodParseResult = this._zodParse(
       internalResult as ParseResultMatch<T>,
-      shape
+      shape,
     );
     if (!zodParseResult.success) {
       this._handleAndExit(zodParseResult.error);
@@ -207,7 +207,7 @@ export class Parser<
 
     const validationError = this._validateByCustomValidation(
       zodParseResult.value,
-      internalResult.help
+      internalResult.help,
     );
     if (validationError !== undefined) {
       this._handleAndExit(validationError);
@@ -220,7 +220,7 @@ export class Parser<
 
   private _validateByCustomValidation<T extends Record<string, unknown>>(
     value: T,
-    help: string
+    help: string,
   ): ParseResultError | undefined {
     if (this._validation === undefined) {
       return undefined;
@@ -248,7 +248,7 @@ export class Parser<
 
   private _zodParse<T extends Record<string, unknown>>(
     prevResult: ParseResultMatch<T>,
-    shape: z.ZodRawShape
+    shape: z.ZodRawShape,
   ): { success: true; value: T } | { success: false; error: ParseResultError } {
     const result = z.object(shape).safeParse(prevResult.parsed);
     if (!result.success) {
@@ -259,7 +259,7 @@ export class Parser<
           type: "error",
           error: new ParseError(
             `${firstError.message}: ${firstError.path.join("")}`,
-            result.error
+            result.error,
           ),
           reason: "schema",
           help: prevResult.help,
@@ -271,7 +271,7 @@ export class Parser<
   }
 
   private _handleAndExit(
-    handlerArg: ParseResultError | ParseResultHelp | ParseResultVersion
+    handlerArg: ParseResultError | ParseResultHelp | ParseResultVersion,
   ): never {
     if (this._handler != null) {
       this._handler(handlerArg);

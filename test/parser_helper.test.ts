@@ -9,7 +9,7 @@ describe("generateZodShape()", () => {
       {
         opt1: { type: z.string() },
       },
-      [{ name: "pos1", type: z.string() }]
+      [{ name: "pos1", type: z.string() }],
     );
     expect(result).toHaveProperty("opt1");
     expect(result).toHaveProperty("pos1");
