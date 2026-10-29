@@ -4,37 +4,84 @@ on:
   push:
     branches: [master]
   pull_request:
+  # So the checks can be re-run by hand after a flake.
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # The workflows themselves: mistakes (actionlint, with shellcheck on the
+  # scripts), security problems (zizmor, see .github/zizmor.yml), and the
+  # commits the actions are pinned to (.github/workflows/actions.lock).
+  workflows:
+    name: Lint the workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: actionlint
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACTIONLINT_VERSION: 1.7.12
+        run: |
+          gh release download "v$ACTIONLINT_VERSION" --repo rhysd/actionlint --dir "$RUNNER_TEMP" \
+            --pattern "actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
+            --pattern "actionlint_${ACTIONLINT_VERSION}_checksums.txt"
+          (cd "$RUNNER_TEMP" && sha256sum --check --ignore-missing "actionlint_${ACTIONLINT_VERSION}_checksums.txt")
+          tar -xzf "$RUNNER_TEMP/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" -C "$RUNNER_TEMP" actionlint
+          "$RUNNER_TEMP/actionlint" -color
+      - name: zizmor
+        uses: zizmorcore/zizmor-action@v0.7.1
+        with:
+          version: 1.31.1
+          # Report in the job log instead of uploading SARIF to code scanning,
+          # which would need the security-events permission.
+          advanced-security: false
+      - name: Verify the action lockfile
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh extension install github/gh-actions-lock --pin v0.3.0
+          gh actions-lock --verify
+
   test:
-    runs-on: ${{ matrix.os }}
+    name: Test (Node ${{ matrix.node }}, Zod ${{ matrix.zod }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       matrix:
         node: [22, 24, 26]
-        os: [ubuntu-latest]
         zod: ["3", "4"]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       - name: Use Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v7.1.0
         with:
-          cache: "npm"
+          cache: npm
           node-version: ${{ matrix.node }}
       - run: npm ci
       - run: npm run lint
-      - name: Typecheck (Zod ${{ matrix.zod }})
-        run: npm run typecheck:zod${{ matrix.zod }}
-      - name: Test with coverage (Zod ${{ matrix.zod }})
-        run: npm run test_cov:zod${{ matrix.zod }} # ts-jest doesn't need build js files
+      - name: Typecheck
+        env:
+          ZOD: ${{ matrix.zod }}
+        run: npm run "typecheck:zod$ZOD"
+      - name: Test with coverage
+        env:
+          ZOD: ${{ matrix.zod }}
+        run: npm run "test_cov:zod$ZOD" # ts-jest doesn't need build js files
       - name: Upload coverage reports to Codecov
         # Dependabot PRs can't read CODECOV_TOKEN
         if: github.actor != 'dependabot[bot]'
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
