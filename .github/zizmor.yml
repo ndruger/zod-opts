@@ -1,0 +1,9 @@
+# zizmor (the security linter for the workflows, run in CI).
+rules:
+  unpinned-uses:
+    config:
+      # The workflows name actions by tag so they stay readable; the commit
+      # each tag stands for is pinned in .github/workflows/actions.lock
+      # (`gh actions-lock`), which CI verifies and the runner enforces.
+      policies:
+        "*": ref-pin
