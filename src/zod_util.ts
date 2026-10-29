@@ -72,11 +72,11 @@ function getWrappedDef(def: SchemaDef): SchemaDef | undefined {
 
 export function getDefaultValue(
   def: SchemaDef,
-  allowOptionalDefault: boolean = false
+  allowOptionalDefault: boolean = false,
 ): string[] | number[] | BaseTypeT | undefined {
   const resolveDefault = (
     currentDef: unknown,
-    optionalSeen: boolean
+    optionalSeen: boolean,
   ): unknown => {
     if (currentDef == null || typeof currentDef !== "object") {
       return undefined;
@@ -103,11 +103,11 @@ export function getDefaultValue(
 
   const defaultValue = resolveDefault(def, false);
   const isPrimitive = [...BASE_TYPES, "undefined"].includes(
-    typeof defaultValue
+    typeof defaultValue,
   );
   if (!isPrimitive && !Array.isArray(defaultValue)) {
     throw new Error(
-      `Unsupported default value: ${JSON.stringify(defaultValue)}`
+      `Unsupported default value: ${JSON.stringify(defaultValue)}`,
     );
   }
   if (Array.isArray(defaultValue)) {
@@ -117,12 +117,12 @@ export function getDefaultValue(
     const firstType = typeof defaultValue[0];
     if (!["string", "number"].includes(firstType)) {
       throw new Error(
-        `Unsupported default value: ${JSON.stringify(defaultValue)}`
+        `Unsupported default value: ${JSON.stringify(defaultValue)}`,
       );
     }
     if (uniq(defaultValue.map((value) => typeof value)).length > 1) {
       throw new Error(
-        `Unsupported default value: ${JSON.stringify(defaultValue)}`
+        `Unsupported default value: ${JSON.stringify(defaultValue)}`,
       );
     }
     return defaultValue as string[] | number[];
@@ -195,7 +195,7 @@ function resolveInnerType(def: SchemaDef): SchemaDef {
 
 export function toInternalType(
   def: SchemaDef,
-  isPositional: boolean = false
+  isPositional: boolean = false,
 ): BaseType {
   const solvedDef = resolveInnerType(def);
   const typeName = getTypeName(solvedDef);
@@ -208,7 +208,7 @@ export function toInternalType(
     case "boolean":
       if (isPositional) {
         throw new Error(
-          `Unsupported zod type (positional argument): ${typeName}`
+          `Unsupported zod type (positional argument): ${typeName}`,
         );
       }
       return "boolean";
@@ -231,7 +231,7 @@ export function toInternalTypeForZodUnion(def: SchemaDef): BaseType {
         return [];
       }
       return [toInternalType(getDef(option))];
-    })
+    }),
   );
   if (types.length !== 1) {
     throw new Error("Union types are not same");
@@ -243,8 +243,8 @@ function toInternalTypeForZodArray(def: SchemaDef): BaseType {
   const elementSchema = isZodSchema(def.element)
     ? def.element
     : isZodSchema(def.type)
-    ? def.type
-    : undefined;
+      ? def.type
+      : undefined;
   if (elementSchema == null) {
     throw new Error("Array element type not found");
   }
@@ -281,11 +281,7 @@ export function optionToInternal(option: Option, name: string): InternalOption {
   const zodType = option.type;
   const def = getDef(zodType);
   const defaultValue = getDefaultValue(def, isZodV4(zodType)) as
-    | string
-    | number
-    | string[]
-    | number[]
-    | undefined;
+    string | number | string[] | number[] | undefined;
   const internalType = toInternalType(def);
   const resolvedDef = resolveInnerType(def);
   const resolvedTypeName = getTypeName(resolvedDef);
@@ -306,16 +302,12 @@ export function optionToInternal(option: Option, name: string): InternalOption {
 }
 
 export function positionalArgumentToInternal(
-  option: PositionalArgument
+  option: PositionalArgument,
 ): InternalPositionalArgument {
   const zodType = option.type;
   const def = getDef(zodType);
   const defaultValue = getDefaultValue(def, isZodV4(zodType)) as
-    | string
-    | number
-    | string[]
-    | number[]
-    | undefined;
+    string | number | string[] | number[] | undefined;
   const internalType = toInternalType(def, true) as "string" | "number";
   const resolvedDef = resolveInnerType(def);
   const resolvedTypeName = getTypeName(resolvedDef);

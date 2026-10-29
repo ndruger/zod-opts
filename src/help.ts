@@ -48,7 +48,7 @@ function tableToText(rows: string[][]): string {
 export function generateGlobalUsage(
   scriptName: string,
   positionalArgs: InternalPositionalArgument[],
-  commandName?: string
+  commandName?: string,
 ): string {
   const positionalStr = positionalArgs
     .map((option) => {
@@ -68,7 +68,7 @@ export function generateGlobalCommandUsage(scriptName: string): string {
 }
 
 function generateDefaultString(
-  option: InternalOption | InternalPositionalArgument
+  option: InternalOption | InternalPositionalArgument,
 ): string {
   return option.defaultValue !== undefined
     ? `(default: ${JSON.stringify(option.defaultValue)})`
@@ -89,7 +89,7 @@ function generateNameAndArgString(option: InternalOption): string {
 }
 
 function generateChoiceString(
-  option: InternalOption | InternalPositionalArgument
+  option: InternalOption | InternalPositionalArgument,
 ): string {
   if (option.enumValues === undefined) {
     return "";
@@ -98,7 +98,7 @@ function generateChoiceString(
 }
 
 function generateDescriptionString(
-  option: InternalOption | InternalPositionalArgument
+  option: InternalOption | InternalPositionalArgument,
 ): string {
   const descriptionStr = option.description ?? "";
   const defaultStr = generateDefaultString(option);
@@ -113,7 +113,7 @@ function collapseWhiteSpace(words: string[], splitter = " "): string {
 
 export function generateOptionsText(
   options: InternalOption[],
-  indent: number = 2
+  indent: number = 2,
 ): string {
   const indentStr = " ".repeat(indent);
   const table = options.map((option) => {
@@ -128,7 +128,7 @@ export function generateOptionsText(
 
 export function generatePositionalArgumentsText(
   positionalArgs: InternalPositionalArgument[],
-  indent: number = 2
+  indent: number = 2,
 ): string {
   if (positionalArgs.length === 0) {
     return "";
@@ -145,7 +145,7 @@ export function generatePositionalArgumentsText(
 
 export function generateCommandsText(
   commands: InternalCommand[],
-  indent: number = 2
+  indent: number = 2,
 ): string {
   const indentStr = " ".repeat(indent);
   const table = commands.map((command) => {
@@ -177,7 +177,7 @@ export function generateGlobalHelp({
   const positionalArgsText = generatePositionalArgumentsText(positionalArgs);
   return `${collapseWhiteSpace(
     [globalUsage, descriptionStr, positionalArgsText, optionsText],
-    "\n\n"
+    "\n\n",
   )}\n`;
 }
 
@@ -195,7 +195,7 @@ export function generateCommandHelp({
   const globalUsage = generateGlobalUsage(
     name ?? "script",
     positionalArg,
-    command.name
+    command.name,
   );
   const optionsWithBuildIn = getBuiltInOptions(version).concat(options);
   const descriptionStr =
@@ -204,7 +204,7 @@ export function generateCommandHelp({
   const positionalArgsText = generatePositionalArgumentsText(positionalArg);
   return `${collapseWhiteSpace(
     [globalUsage, descriptionStr, positionalArgsText, optionsText],
-    "\n\n"
+    "\n\n",
   )}\n`;
 }
 
@@ -225,6 +225,6 @@ export function generateGlobalCommandHelp({
   const optionsText = generateOptionsText(getBuiltInOptions(version));
   return `${collapseWhiteSpace(
     [globalUsage, descriptionStr, commandsText, optionsText],
-    "\n\n"
+    "\n\n",
   )}\n`;
 }

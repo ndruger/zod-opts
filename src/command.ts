@@ -13,7 +13,7 @@ import type {
 import * as util from "./util";
 
 type ActionCallback<T extends ZodRawShape> = (
-  parsed: z.infer<ZodObject<T>>
+  parsed: z.infer<ZodObject<T>>,
 ) => true | string;
 
 interface CommandState {
@@ -28,7 +28,7 @@ interface CommandState {
 
 export class Command<
   TOptions extends Options = {},
-  TPositionalArguments extends PositionalArguments = []
+  TPositionalArguments extends PositionalArguments = [],
 > {
   private readonly _name: string | undefined;
   private _description: string | undefined;
@@ -74,11 +74,11 @@ export class Command<
   }
 
   options<TNewOptions extends Options>(
-    options: TNewOptions
+    options: TNewOptions,
   ): Command<TNewOptions, TPositionalArguments> {
     util.validateParamOptionsAndPositionalArguments(
       options,
-      this._positionalArgs
+      this._positionalArgs,
     );
     return new Command<TNewOptions, TPositionalArguments>({
       ...this._currentState(),
@@ -87,11 +87,11 @@ export class Command<
   }
 
   args<TNewPositionalArguments extends PositionalArguments>(
-    positionalArgs: Narrow<TNewPositionalArguments>
+    positionalArgs: Narrow<TNewPositionalArguments>,
   ): Command<TOptions, TNewPositionalArguments> {
     util.validateParamOptionsAndPositionalArguments(
       this._options,
-      positionalArgs as TNewPositionalArguments
+      positionalArgs as TNewPositionalArguments,
     );
     return new Command<TOptions, TNewPositionalArguments>({
       ...this._currentState(),
@@ -100,14 +100,14 @@ export class Command<
   }
 
   validation<TShape extends GenerateZodShape<TOptions, TPositionalArguments>>(
-    validation: (parsed: z.infer<ZodObject<TShape>>) => true | string
+    validation: (parsed: z.infer<ZodObject<TShape>>) => true | string,
   ): this {
     this._validation = validation as ValidateCallback<ZodRawShape>;
     return this;
   }
 
   action<TShape extends GenerateZodShape<TOptions, TPositionalArguments>>(
-    action: (parsed: z.infer<ZodObject<TShape>>) => void
+    action: (parsed: z.infer<ZodObject<TShape>>) => void,
   ): this {
     this._action = action as ActionCallback<ZodRawShape>;
     return this;
@@ -123,7 +123,7 @@ export class Command<
       description: this._description,
       options: helper.generateInternalOptions(this._options),
       positionalArgs: helper.generateInternalPositionalArguments(
-        this._positionalArgs
+        this._positionalArgs,
       ),
     };
   }

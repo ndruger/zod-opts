@@ -23,7 +23,7 @@ export function findDuplicateValues(array: string[]): string[] {
 export function errorExit(
   parseResult: ParseResultError | ParseResultHelp | ParseResultVersion,
   version: string = "none",
-  exitCode: number = parseResult.exitCode
+  exitCode: number = parseResult.exitCode,
 ): never {
   const { type, help } = parseResult;
   if (type === "help") {
@@ -39,7 +39,7 @@ export function errorExit(
 
 export function resolveExitCode(
   parseResult: ExitResult,
-  onExit: ExitCallback | undefined
+  onExit: ExitCallback | undefined,
 ): number {
   if (onExit === undefined) {
     return parseResult.exitCode;
@@ -50,7 +50,7 @@ export function resolveExitCode(
   }
   if (!Number.isInteger(exitCode) || exitCode < 0 || exitCode > 255) {
     throw new Error(
-      `Invalid exit code. Supported range is integer 0-255: ${String(exitCode)}`
+      `Invalid exit code. Supported range is integer 0-255: ${String(exitCode)}`,
     );
   }
   return exitCode;
@@ -67,12 +67,12 @@ const OptionAliasSchema = z
 function validateParamOption(name: string, { alias }: Option): void {
   if (!IdSchema.safeParse(name).success) {
     throw new Error(
-      `Invalid option name. Supported pattern is /${IdRegexStr}/: ${name}`
+      `Invalid option name. Supported pattern is /${IdRegexStr}/: ${name}`,
     );
   }
   if (alias !== undefined && !OptionAliasSchema.safeParse(alias).success) {
     throw new Error(
-      `Invalid option alias. Supported pattern is /${OptionAliasRegexStr}/: ${alias}`
+      `Invalid option alias. Supported pattern is /${OptionAliasRegexStr}/: ${alias}`,
     );
   }
 }
@@ -80,7 +80,7 @@ function validateParamOption(name: string, { alias }: Option): void {
 function validateParamPositionalArg({ name }: PositionalArgument): void {
   if (!IdSchema.safeParse(name).success) {
     throw new Error(
-      `Invalid positional argument name. Supported pattern is /${IdRegexStr}/: ${name}`
+      `Invalid positional argument name. Supported pattern is /${IdRegexStr}/: ${name}`,
     );
   }
 }
@@ -93,25 +93,25 @@ function checkForDuplicateOptionNames(options: Options | undefined): void {
 }
 
 function checkForDuplicatePositionalOptionNames(
-  positionalArgs: PositionalArguments
+  positionalArgs: PositionalArguments,
 ): void {
   const duplicateName = findDuplicateValues(
-    positionalArgs.map((option) => option.name)
+    positionalArgs.map((option) => option.name),
   );
   if (duplicateName.length !== 0) {
     throw new Error(
-      `Duplicated positional argument name: ${duplicateName.join(", ")}`
+      `Duplicated positional argument name: ${duplicateName.join(", ")}`,
     );
   }
 }
 function checkIfOptNameUsedWithPositionalOption(
   options: Options,
-  positionalArgs: PositionalArguments
+  positionalArgs: PositionalArguments,
 ): void {
   Object.keys(options).forEach((optionName) => {
     if (positionalArgs.some((option) => option.name === optionName)) {
       throw new Error(
-        `Duplicated option name with positional argument name: ${optionName}`
+        `Duplicated option name with positional argument name: ${optionName}`,
       );
     }
   });
@@ -119,7 +119,7 @@ function checkIfOptNameUsedWithPositionalOption(
 
 export function validateParamOptionsAndPositionalArguments(
   options: Options,
-  positionalArgs: PositionalArguments
+  positionalArgs: PositionalArguments,
 ): void {
   Object.entries(options).forEach(([optionName, option]) => {
     validateParamOption(optionName, option);

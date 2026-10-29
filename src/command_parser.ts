@@ -83,8 +83,8 @@ export class CommandParser {
         | ParseResultMatch<z.infer<ZodObject<z.ZodRawShape>>>
         | ParseResultError
         | ParseResultHelp
-        | ParseResultVersion
-    ) => void
+        | ParseResultVersion,
+    ) => void,
   ): this {
     this._handler = handler as Handler<z.ZodRawShape>;
     return this;
@@ -93,11 +93,11 @@ export class CommandParser {
   subcommand(command: Command): this {
     if (
       this._commands.some(
-        (c) => c.toInternalCommand().name === command.toInternalCommand().name
+        (c) => c.toInternalCommand().name === command.toInternalCommand().name,
       )
     ) {
       throw new Error(
-        `Duplicated command name: ${command.toInternalCommand().name}`
+        `Duplicated command name: ${command.toInternalCommand().name}`,
       );
     }
 
@@ -118,7 +118,7 @@ export class CommandParser {
   getHelp(commandName?: string): string {
     if (commandName === undefined) {
       const internalCommands = this._commands.map((command) =>
-        command.toInternalCommand()
+        command.toInternalCommand(),
       );
       return generateGlobalCommandHelp({
         commands: internalCommands,
@@ -129,7 +129,7 @@ export class CommandParser {
     }
 
     const foundCommand = this._commands.find(
-      (command) => command.toInternalCommand().name === commandName
+      (command) => command.toInternalCommand().name === commandName,
     );
     if (foundCommand === undefined) {
       throw new Error(`Command not found: ${commandName ?? ""}`);
@@ -159,7 +159,7 @@ export class CommandParser {
       this._handleAndExit(internalResult);
     }
     const usedCommandIndex = internalCommands.findIndex(
-      (command) => internalResult.commandName === command.name
+      (command) => internalResult.commandName === command.name,
     );
     if (usedCommandIndex < 0) {
       throw new Error(`Command not found: ${internalResult.commandName ?? ""}`);
@@ -174,7 +174,7 @@ export class CommandParser {
       validation,
       zodParseResult.value,
       internalResult.help,
-      internalResult.commandName
+      internalResult.commandName,
     );
     if (validationError !== undefined) {
       this._handleAndExit(validationError);
@@ -187,7 +187,7 @@ export class CommandParser {
   }
 
   private _handleAndExit(
-    handlerArg: ParseResultError | ParseResultHelp | ParseResultVersion
+    handlerArg: ParseResultError | ParseResultHelp | ParseResultVersion,
   ): never {
     if (this._handler != null) {
       this._handler(handlerArg);
@@ -207,7 +207,7 @@ export class CommandParser {
   private _generateParseHelp(
     commands: InternalCommand[],
     selectedCommand: InternalCommand | undefined,
-    scriptName: string | undefined
+    scriptName: string | undefined,
   ): string {
     return selectedCommand === undefined
       ? generateGlobalCommandHelp({
@@ -227,7 +227,7 @@ export class CommandParser {
     parsed: CommandParsedHelp | CommandParsedVersion,
     selectedCommand: InternalCommand | undefined,
     commands: InternalCommand[],
-    scriptName: string
+    scriptName: string,
   ): ParseResultHelp | ParseResultVersion {
     const help = this._generateParseHelp(commands, selectedCommand, scriptName);
 
@@ -253,7 +253,7 @@ export class CommandParser {
   private _handleInternalParseError(
     e: ParseError,
     commands: InternalCommand[],
-    scriptName: string | undefined
+    scriptName: string | undefined,
   ): ParseResultError {
     const error = e;
     const selectedCommand =
@@ -274,7 +274,7 @@ export class CommandParser {
     parsed: CommandParsed,
     selectedCommand: InternalCommand,
     commands: InternalCommand[],
-    scriptName: string
+    scriptName: string,
   ): ParseResultMatch<Record<string, unknown>> {
     const commandName = parsed.commandName ?? selectedCommand.name;
     const { options: validOptions, positionalArgs: validPositionalArguments } =
@@ -282,17 +282,17 @@ export class CommandParser {
         parsed,
         selectedCommand.options,
         selectedCommand.positionalArgs,
-        commandName
+        commandName,
       );
     debugLog("createInternalParserAndParse", {
       validOptions: JSON.stringify(validOptions),
       validPositionalArguments: JSON.stringify(validPositionalArguments),
     });
     const validOptionMap = Object.fromEntries(
-      validOptions.map((option) => [option.name, option.value])
+      validOptions.map((option) => [option.name, option.value]),
     );
     const validPositionalArgMap = Object.fromEntries(
-      validPositionalArguments.map((option) => [option.name, option.value])
+      validPositionalArguments.map((option) => [option.name, option.value]),
     );
 
     return {
@@ -328,14 +328,14 @@ export class CommandParser {
         parsed: JSON.stringify(parsed),
       });
       const selectedCommand = commands.find(
-        (command) => command.name === parsed.commandName
+        (command) => command.name === parsed.commandName,
       );
       if (parsed.isHelp || parsed.isVersion) {
         return this._handleInternalParseHelpAndVersion(
           parsed as CommandParsedHelp | CommandParsedVersion,
           selectedCommand,
           commands,
-          scriptName
+          scriptName,
         );
       }
       if (selectedCommand === undefined) {
@@ -345,7 +345,7 @@ export class CommandParser {
         parsed,
         selectedCommand,
         commands,
-        scriptName
+        scriptName,
       );
     } catch (e) {
       debugLog("createInternalParserAndParse handle error", e);
@@ -358,7 +358,7 @@ export class CommandParser {
 
   private _zodParse<T extends Record<string, unknown>>(
     prevResult: ParseResultMatch<T>,
-    shape: ZodRawShape
+    shape: ZodRawShape,
   ): { success: true; value: T } | { success: false; error: ParseResultError } {
     const result = z.object(shape).safeParse(prevResult.parsed);
     if (!result.success) {
@@ -369,7 +369,7 @@ export class CommandParser {
           type: "error",
           error: new ParseError(
             `${firstError.message}: ${firstError.path.join("")}`,
-            result.error
+            result.error,
           ),
           reason: "schema",
           help: prevResult.help,
@@ -385,7 +385,7 @@ export class CommandParser {
     validation: ValidateCallback<ZodRawShape> | undefined,
     value: T,
     help: string,
-    commandName: string | undefined
+    commandName: string | undefined,
   ): ParseResultError | undefined {
     if (validation === undefined) {
       return undefined;

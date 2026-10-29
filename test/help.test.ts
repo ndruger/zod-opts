@@ -78,7 +78,7 @@ describe("generateGlobalUsage()", () => {
     ];
     const result = generateGlobalUsage(scriptName, positionalArgs);
     expect(result).toBe(
-      "Usage: scriptA [options] <positional1> <positional2> [positional3 ...]"
+      "Usage: scriptA [options] <positional1> <positional2> [positional3 ...]",
     );
   });
 });

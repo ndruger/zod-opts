@@ -26,8 +26,7 @@ export interface PositionalArgument {
 }
 
 export type PositionalArguments =
-  | []
-  | [PositionalArgument, ...PositionalArgument[]];
+  [] | [PositionalArgument, ...PositionalArgument[]];
 
 export type OptionsToZodShape<T extends Options> = {
   [Key in keyof T]: T[Key]["type"];
@@ -35,7 +34,7 @@ export type OptionsToZodShape<T extends Options> = {
 
 export type PositionalArgumentsToShape<T, TAcc = {}> = T extends [
   infer Head,
-  ...infer Rest
+  ...infer Rest,
 ]
   ? Head extends {
       name: infer Name;
@@ -91,10 +90,7 @@ export interface ParseResultVersion {
 }
 
 export type ParseResult<T> =
-  | ParseResultMatch<T>
-  | ParseResultError
-  | ParseResultHelp
-  | ParseResultVersion;
+  ParseResultMatch<T> | ParseResultError | ParseResultHelp | ParseResultVersion;
 
 export interface InternalOption {
   type: BaseType;
@@ -130,19 +126,17 @@ export type Handler<T extends ZodRawShape> = (
     | ParseResultMatch<z.infer<ZodObject<T>>>
     | ParseResultError
     | ParseResultHelp
-    | ParseResultVersion
+    | ParseResultVersion,
 ) => void;
 
 export type ExitResult =
-  | ParseResultError
-  | ParseResultHelp
-  | ParseResultVersion;
+  ParseResultError | ParseResultHelp | ParseResultVersion;
 
 // Returns the exit code. When nothing is returned, the default exit code is used.
 export type ExitCallback = (result: ExitResult) => number | void;
 
 export type ValidateCallback<T extends ZodRawShape> = (
-  parsed: z.infer<ZodObject<T>>
+  parsed: z.infer<ZodObject<T>>,
 ) => true | string;
 
 export interface FormatValidOption {

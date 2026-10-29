@@ -251,7 +251,7 @@ describe("type", () => {
       expectProcessExit("Option 'opt1' needs value: opt1", 1, () =>
         parser()
           .options({ opt1: { type: z.string() } })
-          .parse(["--opt1"])
+          .parse(["--opt1"]),
       );
     });
 
@@ -264,7 +264,7 @@ describe("type", () => {
             .options({
               opt1: { type: z.string().min(10) },
             })
-            .parse(["--opt1", "short"])
+            .parse(["--opt1", "short"]),
       );
     });
 
@@ -328,7 +328,7 @@ describe("type", () => {
               opt1: { type: z.string().optional() },
             })
             .args([{ name: "pos", type: z.string() }])
-            .parse(["--no-opt1", "arg"])
+            .parse(["--no-opt1", "arg"]),
       );
     });
   });
@@ -355,7 +355,7 @@ describe("type", () => {
       expectProcessExit("Option 'opt1' needs value: opt1", 1, () =>
         parser()
           .options({ opt1: { type: z.number() } })
-          .parse(["--opt1"])
+          .parse(["--opt1"]),
       );
     });
 
@@ -368,7 +368,7 @@ describe("type", () => {
             .options({
               opt1: { type: z.number().min(10) },
             })
-            .parse(["--opt1", "5"])
+            .parse(["--opt1", "5"]),
       );
     });
   });
@@ -410,7 +410,7 @@ describe("type", () => {
           .args([{ name: "opt", type: z.boolean() }])
           .parse([]);
       }).toThrow(
-        /Unsupported zod type \(positional argument\): (ZodBoolean|boolean)/
+        /Unsupported zod type \(positional argument\): (ZodBoolean|boolean)/,
       );
     });
 
@@ -482,7 +482,7 @@ describe("type", () => {
           parser()
             .options({ opt: { type: z.boolean() } })
             .parse(["--opt=str"]);
-        }
+        },
       );
     });
 
@@ -494,7 +494,7 @@ describe("type", () => {
           parser()
             .options({ opt: { type: z.boolean() } })
             .parse(["--opt=true"]);
-        }
+        },
       );
     });
 
@@ -526,7 +526,7 @@ describe("type", () => {
           parser()
             .options({ opt: { type: z.enum(["a", "b", "c"]) } })
             .parse(["--opt", "d"]);
-        }
+        },
       );
     });
 
@@ -766,7 +766,7 @@ describe("type", () => {
                 },
               })
               .parse(["--opt", "short"]);
-          }
+          },
         );
       });
 
@@ -782,7 +782,7 @@ describe("type", () => {
                 },
               })
               .parse(["--opt", "short"]);
-          }
+          },
         );
       });
 
@@ -798,7 +798,7 @@ describe("type", () => {
                 },
               })
               .parse(["--opt", "5"]);
-          }
+          },
         );
       });
 
@@ -980,7 +980,7 @@ describe("type", () => {
             parser()
               .args([{ name: "pos", type: z.array(z.string().min(10)) }])
               .parse(["short"]);
-          }
+          },
         );
       });
 
@@ -1000,7 +1000,7 @@ describe("type", () => {
             parser()
               .args([{ name: "pos", type: z.array(z.number().min(10)) }])
               .parse(["5"]);
-          }
+          },
         );
       });
 
@@ -1107,7 +1107,7 @@ describe("format error", () => {
             opt1: { type: z.number() },
           })
           .parse(["--opt1", "str"]);
-      }
+      },
     );
   });
 

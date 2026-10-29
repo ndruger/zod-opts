@@ -21,21 +21,23 @@ export function generateInternalOptions(options: Options): InternalOption[] {
 }
 
 export function generateInternalPositionalArguments(
-  positionalArgs: PositionalArguments
+  positionalArgs: PositionalArguments,
 ): InternalPositionalArgument[] {
   return positionalArgs.map(zodUtil.positionalArgumentToInternal);
 }
 
 export function generateZodShape(
   options?: Options,
-  positionalArgs?: PositionalArguments
+  positionalArgs?: PositionalArguments,
 ): z.ZodRawShape {
   const optionShape = Object.fromEntries(
     Object.entries(options ?? {})
       .map(([name, { type }]) => {
         return [name, type];
       })
-      .concat(positionalArgs?.map((option) => [option.name, option.type]) ?? [])
+      .concat(
+        positionalArgs?.map((option) => [option.name, option.type]) ?? [],
+      ),
   );
   return optionShape;
 }
@@ -99,10 +101,10 @@ export function createInternalParserAndParse({
       validPositionalArguments: JSON.stringify(validPositionalArguments),
     });
     const validOptionMap = Object.fromEntries(
-      validOptions.map((option) => [option.name, option.value])
+      validOptions.map((option) => [option.name, option.value]),
     );
     const validPositionalArgMap = Object.fromEntries(
-      validPositionalArguments.map((option) => [option.name, option.value])
+      validPositionalArguments.map((option) => [option.name, option.value]),
     );
 
     return {

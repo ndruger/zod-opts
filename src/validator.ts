@@ -21,7 +21,7 @@ interface ValidPositionalValue {
 export function validateCandidateValue(
   option: InternalOption,
   value: string | string[] | undefined,
-  isNegative: boolean
+  isNegative: boolean,
 ): ValidValue | undefined {
   if (option.isArray) {
     if (value === undefined || !Array.isArray(value)) {
@@ -75,7 +75,7 @@ export function validateCandidateValue(
 
 export function validatePositionalCandidateValue(
   option: InternalPositionalArgument,
-  value: string | string[]
+  value: string | string[],
 ): ValidPositionalValue | undefined {
   if (option.isArray) {
     if (!Array.isArray(value)) {
@@ -109,7 +109,7 @@ export function validateMultipleCommands(
   parsed: Parsed,
   options: InternalOption[],
   positionalArgs: InternalPositionalArgument[],
-  commandName: string
+  commandName: string,
 ): {
   options: FormatValidOption[];
   positionalArgs: FormatValidPositionalArgument[];
@@ -126,7 +126,7 @@ export function validateMultipleCommands(
 
 function validateOptions(
   candidates: Candidate[],
-  options: InternalOption[]
+  options: InternalOption[],
 ): FormatValidOption[] {
   const optionMap = new Map(options.map((option) => [option.name, option]));
   const validValues: Array<
@@ -139,11 +139,11 @@ function validateOptions(
     const validated = validateCandidateValue(
       option,
       candidate.value,
-      candidate.isNegative
+      candidate.isNegative,
     );
     if (validated === undefined) {
       throw new ParseError(
-        `Invalid option value. ${option.type} is expected: ${candidate.name}`
+        `Invalid option value. ${option.type} is expected: ${candidate.name}`,
       );
     }
     return [candidate.name, validated.value];
@@ -166,11 +166,11 @@ function validateOptions(
   });
 
   const duplicateOptionNames = util.findDuplicateValues(
-    arrayTypeMerged.map(([name]) => name)
+    arrayTypeMerged.map(([name]) => name),
   );
   if (duplicateOptionNames.length !== 0) {
     throw new ParseError(
-      `Duplicated option: ${duplicateOptionNames.join(", ")}`
+      `Duplicated option: ${duplicateOptionNames.join(", ")}`,
     );
   }
   const validValueSet = new Map(arrayTypeMerged);
@@ -188,10 +188,10 @@ function validateOptions(
 
 function validatePositionalArguments(
   candidates: PositionalCandidate[],
-  positionalArgs: InternalPositionalArgument[]
+  positionalArgs: InternalPositionalArgument[],
 ): FormatValidPositionalArgument[] {
   const positionalArgMap = new Map(
-    positionalArgs.map((option) => [option.name, option])
+    positionalArgs.map((option) => [option.name, option]),
   );
   const validValues: Array<[string, string | number | string[] | number[]]> =
     candidates.map((candidate) => {
@@ -202,7 +202,7 @@ function validatePositionalArguments(
       }
       const validated = validatePositionalCandidateValue(
         positionalOption,
-        candidate.value
+        candidate.value,
       );
       if (validated === undefined) {
         throw new ParseError(`Invalid positional argument value: ${name}`);
@@ -213,13 +213,13 @@ function validatePositionalArguments(
   debugLog("validatePositionalArguments", { validValues });
 
   const duplicatedPositionalArgNames = util.findDuplicateValues(
-    validValues.map(([name]) => name)
+    validValues.map(([name]) => name),
   );
   if (duplicatedPositionalArgNames.length !== 0) {
     throw new ParseError(
       `Duplicated positional argument: ${duplicatedPositionalArgNames.join(
-        ", "
-      )}`
+        ", ",
+      )}`,
     );
   }
 
@@ -245,7 +245,7 @@ function validatePositionalArguments(
 export function validate(
   parsed: Parsed,
   options: InternalOption[],
-  positionalArgs: InternalPositionalArgument[]
+  positionalArgs: InternalPositionalArgument[],
 ): {
   options: FormatValidOption[];
   positionalArgs: FormatValidPositionalArgument[];
@@ -254,7 +254,7 @@ export function validate(
     options: validateOptions(parsed.candidates, options),
     positionalArgs: validatePositionalArguments(
       parsed.positionalCandidates,
-      positionalArgs
+      positionalArgs,
     ),
   };
 }

@@ -53,8 +53,8 @@ describe("optionToInternal()", () => {
             alias: "a",
             description: "description1",
           },
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -71,8 +71,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.string().default("default"),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -89,8 +89,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.string().optional(),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -118,8 +118,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.string().default("default").optional(),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual(expectedOptionalDefault);
 
       expect(
@@ -127,8 +127,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.optional(z.string().default("default")),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual(expectedOptionalDefault);
 
       expect(
@@ -136,8 +136,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.string().optional().default("default"),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -155,8 +155,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.string().refine(() => true),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -176,8 +176,8 @@ describe("optionToInternal()", () => {
               .refine(() => true)
               .default("default"),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -198,8 +198,8 @@ describe("optionToInternal()", () => {
               .refine(() => true)
               .optional(),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -216,8 +216,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.string().transform((value) => value.toUpperCase()),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -236,8 +236,8 @@ describe("optionToInternal()", () => {
               .string()
               .pipe(z.string().transform((value) => value.trim())),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -256,8 +256,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.number().max(256),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "number",
         name: "name1",
@@ -274,8 +274,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.number().max(256).default(10),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "number",
         name: "name1",
@@ -295,8 +295,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.boolean(),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "boolean",
         name: "name1",
@@ -316,8 +316,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.enum(["a", "b", "c"]),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -335,8 +335,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.enum(["a", "b", "c"]).default("b"),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -355,8 +355,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.enum(["a", "b", "c"]).optional(),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -378,8 +378,8 @@ describe("optionToInternal()", () => {
               .refine(() => true)
               .default("b"),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -400,8 +400,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.union([z.string(), z.string()]),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -419,8 +419,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.union([z.number(), z.number().max(256)]),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "number",
         name: "name1",
@@ -438,8 +438,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.union([z.boolean(), z.boolean()]),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "boolean",
         name: "name1",
@@ -456,8 +456,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.union([z.string(), z.string().default("default1")]),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -475,8 +475,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.union([z.string(), z.string().optional()]),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -495,7 +495,7 @@ describe("optionToInternal()", () => {
             .union([z.boolean().refine(() => true), z.boolean().default(true)])
             .refine(() => true),
         }),
-        "name1"
+        "name1",
       );
       expect(result.type).toBe("boolean");
       expect(result.name).toBe("name1");
@@ -516,8 +516,8 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.array(z.string()).default([]),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -537,8 +537,8 @@ describe("optionToInternal()", () => {
               .array(z.string())
               .transform((items) => items.map((item) => item.trim())),
           }),
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -553,7 +553,7 @@ describe("optionToInternal()", () => {
     test("throws when element type is missing", () => {
       const fakeArray = makeFakeSchema({ typeName: "ZodArray" });
       expect(() =>
-        optionToInternal({ type: fakeArray, alias: "a" }, "name1")
+        optionToInternal({ type: fakeArray, alias: "a" }, "name1"),
       ).toThrow(new Error("Array element type not found"));
     });
   });
@@ -565,7 +565,7 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.object({ a: z.number() }).default({ a: 10 }),
           }),
-          "name1"
+          "name1",
         );
       }).toThrow(new Error('Unsupported default value: {"a":10}'));
     });
@@ -576,7 +576,7 @@ describe("optionToInternal()", () => {
           createOption({
             type: z.array(z.boolean()).default([true, false]),
           }),
-          "name1"
+          "name1",
         );
       }).toThrow(new Error("Unsupported default value: [true,false]"));
     });
@@ -589,7 +589,7 @@ describe("optionToInternal()", () => {
               .array(z.union([z.string(), z.number()]))
               .default([10, "false"]),
           }),
-          "name1"
+          "name1",
         );
       }).toThrow(new Error('Unsupported default value: [10,"false"]'));
     });
@@ -606,8 +606,8 @@ describe("optionToInternal()", () => {
             alias: "a",
             description: "description1",
           },
-          "name1"
-        )
+          "name1",
+        ),
       ).toEqual({
         type: "string",
         name: "name1",
@@ -629,7 +629,7 @@ describe("positionalArgumentToInternal()", () => {
           name: "name1",
           type: z.array(z.string()).describe("zod_description"),
           description: "description1",
-        })
+        }),
       ).toEqual({
         type: "string",
         name: "name1",

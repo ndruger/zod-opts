@@ -40,7 +40,7 @@ describe("util validation", () => {
     expect(() => {
       validateParamOptionsAndPositionalArguments(
         { shared: { type: z.string() } },
-        [{ name: "shared", type: z.string() }]
+        [{ name: "shared", type: z.string() }],
       );
     }).toThrow(/Duplicated option name with positional argument name/);
   });

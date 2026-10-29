@@ -106,8 +106,8 @@ function normalizeDefType(def: SchemaDef): string {
     typeof def.typeName === "string"
       ? def.typeName
       : typeof def.type === "string"
-      ? def.type
-      : "";
+        ? def.type
+        : "";
   if (raw in V3_TO_V4_TYPE_MAP) {
     return raw;
   }
@@ -198,7 +198,7 @@ export function getUnionOptions(schema: ZodTypeAny): ZodTypeAny[] {
   const def = getDef(schema);
   if (Array.isArray(def.options)) {
     return def.options.filter((option): option is ZodTypeAny =>
-      isZodSchema(option)
+      isZodSchema(option),
     );
   }
   return [];
@@ -226,7 +226,7 @@ export function getEnumValues(schema: ZodTypeAny): string[] | undefined {
  * Get the element type from an array schema
  */
 export function getArrayElementType(
-  schema: ZodTypeAny
+  schema: ZodTypeAny,
 ): ZodTypeAny | undefined {
   const def = getDef(schema);
   // v3: ZodArrayDef.type

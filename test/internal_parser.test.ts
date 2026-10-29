@@ -36,51 +36,51 @@ describe("findOptionByPrefixedName()", () => {
     expect(
       findOptionByPrefixedName(
         [createInternalOption({ name: "opt1" })],
-        "--opt2"
-      )
+        "--opt2",
+      ),
     ).toEqual(undefined);
     expect(
       findOptionByPrefixedName(
         [createInternalOption({ name: "opt1" })],
-        "--opt1"
-      )
+        "--opt1",
+      ),
     ).toEqual([createInternalOption({ name: "opt1" }), false]);
 
     // In parse phase, don't mind about the value
     expect(
       findOptionByPrefixedName(
         [createInternalOption({ name: "opt1", type: "number" })],
-        "--opt1"
-      )
+        "--opt1",
+      ),
     ).toEqual([createInternalOption({ name: "opt1", type: "number" }), false]);
 
     expect(
       findOptionByPrefixedName(
         [createInternalOption({ name: "opt1", type: "boolean" })],
-        "--opt1"
-      )
+        "--opt1",
+      ),
     ).toEqual([createInternalOption({ name: "opt1", type: "boolean" }), false]);
 
     expect(
       findOptionByPrefixedName(
         [createInternalOption({ name: "opt1", type: "boolean" })],
-        "--no-opt1"
-      )
+        "--no-opt1",
+      ),
     ).toEqual([createInternalOption({ name: "opt1", type: "boolean" }), true]);
 
     // don't check required
     expect(
       findOptionByPrefixedName(
         [createInternalOption({ name: "opt1", type: "string" })],
-        "--no-opt1"
-      )
+        "--no-opt1",
+      ),
     ).toEqual([createInternalOption({ name: "opt1", type: "string" }), true]);
 
     expect(
       findOptionByPrefixedName(
         [createInternalOption({ name: "opt1", type: "boolean" })],
-        "--no-opt2"
-      )
+        "--no-opt2",
+      ),
     ).toEqual(undefined);
   });
 });
@@ -93,7 +93,7 @@ describe("likesOptionArg()", () => {
     expect(likesOptionArg("--a=-10", [])).toEqual(true);
     expect(likesOptionArg("--10", [])).toEqual(true);
     expect(
-      likesOptionArg("-1", [createInternalOption({ alias: "1" })])
+      likesOptionArg("-1", [createInternalOption({ alias: "1" })]),
     ).toEqual(true);
 
     expect(likesOptionArg("--", [])).toEqual(false);
@@ -107,7 +107,7 @@ describe("likesOptionArg()", () => {
 describe("pickPositionalArguments()", () => {
   test("common", () => {
     expect(
-      pickPositionalArguments(["pos1", "pos2", "pos3"], [], false)
+      pickPositionalArguments(["pos1", "pos2", "pos3"], [], false),
     ).toEqual({
       positionalArgs: ["pos1", "pos2", "pos3"],
       shift: 3,
@@ -138,7 +138,7 @@ describe("parse()", () => {
             createInternalOption({ name: "opt2" }),
           ],
           positionalArgs: [],
-        })
+        }),
       ).toEqual({
         candidates: [
           {
@@ -165,7 +165,7 @@ describe("parse()", () => {
             createInternalPositionalArgument({ name: "pos1" }),
             createInternalPositionalArgument({ name: "pos2" }),
           ],
-        })
+        }),
       ).toEqual({
         candidates: [],
         positionalCandidates: [
@@ -193,7 +193,7 @@ describe("parse()", () => {
             createInternalPositionalArgument({ name: "pos2" }),
             createInternalPositionalArgument({ name: "pos3" }),
           ],
-        })
+        }),
       ).toEqual({
         candidates: [
           {
@@ -227,7 +227,7 @@ describe("parse()", () => {
           args: ["--flag1", "pos1"],
           options: [createInternalOption({ name: "flag1", type: "boolean" })],
           positionalArgs: [createInternalPositionalArgument({})],
-        })
+        }),
       ).toEqual({
         candidates: [
           {
@@ -255,7 +255,7 @@ describe("parse()", () => {
           positionalArgs: [
             createInternalPositionalArgument({ name: "pos1", isArray: true }),
           ],
-        })
+        }),
       ).toEqual({
         candidates: [],
         positionalCandidates: [
@@ -275,7 +275,7 @@ describe("parse()", () => {
           args: ["pos1", "--help"],
           options: [],
           positionalArgs: [createInternalPositionalArgument({ name: "pos1" })],
-        })
+        }),
       ).toEqual({
         candidates: [],
         positionalCandidates: [
@@ -311,7 +311,7 @@ describe("parse()", () => {
             createInternalOption({ name: "opt6" }),
           ],
           positionalArgs: [createInternalPositionalArgument({})],
-        })
+        }),
       ).toEqual({
         candidates: [
           {
@@ -367,7 +367,7 @@ describe("parse()", () => {
             createInternalOption({ name: "opt2", type: "boolean", alias: "b" }),
           ],
           positionalArgs: [createInternalPositionalArgument({ name: "pos1" })],
-        })
+        }),
       ).toEqual({
         candidates: [
           {
@@ -404,7 +404,7 @@ describe("parse()", () => {
             }),
           ],
           positionalArgs: [createInternalPositionalArgument({ name: "pos1" })],
-        })
+        }),
       ).toEqual({
         candidates: [
           {
@@ -432,7 +432,7 @@ describe("parse()", () => {
             createInternalOption({ name: "opt1", type: "string", alias: "ab" }),
           ],
           positionalArgs: [],
-        })
+        }),
       ).toEqual({
         candidates: [
           {
@@ -585,7 +585,7 @@ describe("parseMultipleCommands", () => {
             positionalArgs: [],
           },
         ],
-      })
+      }),
     ).toEqual({
       commandName: "cmd1",
       candidates: [
@@ -615,7 +615,7 @@ describe("parseMultipleCommands", () => {
             positionalArgs: [],
           },
         ],
-      })
+      }),
     ).toEqual({
       candidates: [],
       positionalCandidates: [],
@@ -635,7 +635,7 @@ describe("parseMultipleCommands", () => {
             positionalArgs: [],
           },
         ],
-      })
+      }),
     ).toThrow(/Unknown command/);
   });
 
@@ -653,7 +653,7 @@ describe("parseMultipleCommands", () => {
             positionalArgs: [],
           },
         ],
-      })
+      }),
     ).toEqual({
       commandName: "cmd1",
       candidates: [],
@@ -677,7 +677,7 @@ describe("parseMultipleCommands", () => {
             positionalArgs: [],
           },
         ],
-      })
+      }),
     ).toEqual({
       commandName: "cmd1",
       candidates: [],
@@ -701,7 +701,7 @@ describe("parseMultipleCommands", () => {
             positionalArgs: [],
           },
         ],
-      })
+      }),
     ).toEqual({
       candidates: [],
       positionalCandidates: [],

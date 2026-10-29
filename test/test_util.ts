@@ -7,7 +7,7 @@ import type {
 } from "../src/type";
 
 export function mockConsole(
-  type: "error" | "warn" | "debug" | "log" = "error"
+  type: "error" | "warn" | "debug" | "log" = "error",
 ): any {
   return jest.spyOn(console, type).mockImplementation(() => {});
 }
@@ -34,7 +34,7 @@ export function expectExit0(expectedMessage: string, f: () => void): void {
 export function expectProcessExit(
   expectedMessage: string | RegExp,
   exitCode: number,
-  f: () => void
+  f: () => void,
 ): void {
   const mockedConsoleError = mockConsole();
   const mockedExit = mockExit();
