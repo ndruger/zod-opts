@@ -1,6 +1,9 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [master]
+  pull_request:
 
 permissions:
   contents: read
@@ -14,9 +17,11 @@ jobs:
         os: [ubuntu-latest]
         zod: ["3", "4"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Use Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v7
         with:
           cache: "npm"
           node-version: ${{ matrix.node }}
@@ -27,6 +32,9 @@ jobs:
       - name: Test with coverage (Zod ${{ matrix.zod }})
         run: npm run test_cov:zod${{ matrix.zod }} # ts-jest doesn't need build js files
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        # Dependabot PRs can't read CODECOV_TOKEN
+        if: github.actor != 'dependabot[bot]'
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
