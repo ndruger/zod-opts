@@ -349,6 +349,7 @@ Options:
           expect(result).toEqual({
             type: "error",
             error: new ParseError("Unknown command: missing_command"),
+            reason: "parse",
             help: expect.stringContaining(
               "Usage: scriptNameA [options] <command>"
             ),
@@ -380,6 +381,7 @@ Options:
             commandName: "command1",
             type: "error",
             error: new ParseError("Invalid option: opt-missing"),
+            reason: "parse",
             help: expect.stringContaining(
               "Usage: scriptNameA command1 [options]"
             ),
@@ -412,6 +414,7 @@ Options:
             commandName: "command1",
             type: "error",
             error: new ParseError("Required option is missing: opt1"),
+            reason: "parse",
             help: expect.stringContaining(
               "Usage: scriptNameA command1 [options]"
             ),

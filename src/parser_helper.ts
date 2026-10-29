@@ -121,6 +121,7 @@ export function createInternalParserAndParse({
     return {
       type: "error",
       error: e,
+      reason: "parse",
       exitCode: 1,
       help,
     };

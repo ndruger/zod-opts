@@ -23,6 +23,7 @@ A library that simplifies the process of parsing and validating command-line arg
         - [array option](#array-option)
         - [array positional arguments](#array-positional-arguments)
     - [Custom validation](#custom-validation)
+    - [Exit code](#exit-code)
     - [Variadic arguments](#variadic-arguments)
   - [Commands](#commands)
   - [Help](#help)
@@ -434,6 +435,61 @@ Options:
       --option2 <number>             [required]
 ```
 
+### Exit code
+
+By default, zod-opts prints the message and help, then exits with `1` on errors and `0` on `--help` / `--version`. To change the exit code, register a callback with `.onExit()`. The callback receives the result and returns the exit code (integer 0-255). If it returns nothing, the default exit code is used. `.onExit()` is also available on parsers with subcommands.
+
+`result.reason` tells why the error happened:
+
+| reason       | cause                                                  |
+| ------------ | ------------------------------------------------------ |
+| `parse`      | invalid arguments (unknown option, missing value, ...) |
+| `schema`     | the value does not match the Zod schema                |
+| `validation` | `.validation()` failed                                 |
+
+File: [exit_code.ts](./example/exit_code.ts)
+
+```ts
+const parsed = parser()
+  .options({
+    option1: {
+      type: z.number(),
+    },
+    option2: {
+      type: z.number(),
+    },
+  })
+  .validation((parsed) => {
+    if (parsed.option1 === parsed.option2) {
+      return "option1 and option2 must be different";
+    }
+    return true;
+  })
+  .onExit((result) => {
+    // result.type: "error" | "help" | "version"
+    // result.reason: "parse" | "schema" | "validation" (only when type is "error")
+    if (result.type === "error" && result.reason !== "validation") {
+      return 2; // usage error
+    }
+    // Returning nothing uses the default exit code (error: 1, help/version: 0)
+  })
+  .parse();
+```
+
+```bash
+$ node exit_code.js --option1=10; echo $?
+Required option is missing: option2
+...
+2
+
+$ node exit_code.js --option1=10 --option2=10; echo $?
+option1 and option2 must be different
+...
+1
+```
+
+If the callback throws, zod-opts does not print anything or exit, and the error is thrown from `parse()`.
+
 ### Variadic arguments
 
 Please refer [array types](#array-types).
@@ -565,5 +621,5 @@ console.log(options);
 
 - [ ] Support nested commands.
 - [ ] Support `z.array()` type in `options()`.
-- [ ] Support custom callback to handle errors, help and exit().
+- [ ] Support custom callback to handle output of errors and help.
 - [ ] `asyncParse()`

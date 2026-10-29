@@ -65,9 +65,13 @@ export interface ParseResultMatch<T> {
   commandName?: string;
 }
 
+// "parse": invalid arguments, "schema": zod schema mismatch, "validation": custom validation failure
+export type ParseErrorReason = "parse" | "schema" | "validation";
+
 export interface ParseResultError {
   type: "error";
   error: Error;
+  reason: ParseErrorReason;
   help: string;
   exitCode: 1;
   commandName?: string;
@@ -128,6 +132,14 @@ export type Handler<T extends ZodRawShape> = (
     | ParseResultHelp
     | ParseResultVersion
 ) => void;
+
+export type ExitResult =
+  | ParseResultError
+  | ParseResultHelp
+  | ParseResultVersion;
+
+// Returns the exit code. When nothing is returned, the default exit code is used.
+export type ExitCallback = (result: ExitResult) => number | void;
 
 export type ValidateCallback<T extends ZodRawShape> = (
   parsed: z.infer<ZodObject<T>>

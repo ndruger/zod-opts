@@ -8,6 +8,7 @@ import { generateCommandHelp, generateGlobalCommandHelp } from "./help";
 import { type CommandParsed, parseMultipleCommands } from "./internal_parser";
 import { debugLog } from "./logger";
 import type {
+  ExitCallback,
   Handler,
   InternalCommand,
   ParseResultError,
@@ -33,6 +34,7 @@ export class CommandParser {
   private _version: string | undefined;
   private _description: string | undefined;
   private _handler: Handler<ZodRawShape> | undefined;
+  private _onExit: ExitCallback | undefined;
   private _commands: Command[] = [];
 
   constructor({
@@ -40,18 +42,21 @@ export class CommandParser {
     version,
     description,
     handler,
+    onExit,
     commands,
   }: {
     name?: string;
     version?: string;
     description?: string;
     handler?: Handler<ZodRawShape>;
+    onExit?: ExitCallback;
     commands?: Command[];
   } = {}) {
     this._name = name;
     this._version = version;
     this._description = description;
     this._handler = handler;
+    this._onExit = onExit;
     if (commands !== undefined) {
       this._commands = commands;
     }
@@ -97,6 +102,11 @@ export class CommandParser {
     }
 
     this._commands = this._commands.concat([command]);
+    return this;
+  }
+
+  onExit(onExit: ExitCallback): this {
+    this._onExit = onExit;
     return this;
   }
 
@@ -163,7 +173,8 @@ export class CommandParser {
     const validationError = this._validateByCustomValidation(
       validation,
       zodParseResult.value,
-      internalResult.help
+      internalResult.help,
+      internalResult.commandName
     );
     if (validationError !== undefined) {
       this._handleAndExit(validationError);
@@ -181,7 +192,8 @@ export class CommandParser {
     if (this._handler != null) {
       this._handler(handlerArg);
     }
-    util.errorExit(handlerArg, this._version);
+    const exitCode = util.resolveExitCode(handlerArg, this._onExit);
+    util.errorExit(handlerArg, this._version, exitCode);
   }
 
   private _scriptName(): string {
@@ -251,6 +263,7 @@ export class CommandParser {
     return {
       type: "error",
       error: e,
+      reason: "parse",
       exitCode: 1,
       help: this._generateParseHelp(commands, selectedCommand, scriptName),
       commandName: error.commandName,
@@ -358,6 +371,7 @@ export class CommandParser {
             `${firstError.message}: ${firstError.path.join("")}`,
             result.error
           ),
+          reason: "schema",
           help: prevResult.help,
           exitCode: 1,
           commandName: prevResult.commandName,
@@ -370,7 +384,8 @@ export class CommandParser {
   private _validateByCustomValidation<T extends Record<string, unknown>>(
     validation: ValidateCallback<ZodRawShape> | undefined,
     value: T,
-    help: string
+    help: string,
+    commandName: string | undefined
   ): ParseResultError | undefined {
     if (validation === undefined) {
       return undefined;
@@ -389,8 +404,10 @@ export class CommandParser {
       return {
         type: "error",
         error: new ParseError(validateResult),
+        reason: "validation",
         help,
         exitCode: 1,
+        commandName,
       };
     }
   }

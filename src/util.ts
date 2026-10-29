@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 import type {
+  ExitCallback,
+  ExitResult,
   Option,
   Options,
   ParseResultError,
@@ -20,9 +22,10 @@ export function findDuplicateValues(array: string[]): string[] {
 
 export function errorExit(
   parseResult: ParseResultError | ParseResultHelp | ParseResultVersion,
-  version: string = "none"
+  version: string = "none",
+  exitCode: number = parseResult.exitCode
 ): never {
-  const { type, help, exitCode } = parseResult;
+  const { type, help } = parseResult;
   if (type === "help") {
     console.log(help); // eslint-disable-line no-console
   } else if (type === "version") {
@@ -32,6 +35,25 @@ export function errorExit(
     console.error(help); // eslint-disable-line no-console
   }
   process.exit(exitCode);
+}
+
+export function resolveExitCode(
+  parseResult: ExitResult,
+  onExit: ExitCallback | undefined
+): number {
+  if (onExit === undefined) {
+    return parseResult.exitCode;
+  }
+  const exitCode = onExit(parseResult);
+  if (exitCode === undefined) {
+    return parseResult.exitCode;
+  }
+  if (!Number.isInteger(exitCode) || exitCode < 0 || exitCode > 255) {
+    throw new Error(
+      `Invalid exit code. Supported range is integer 0-255: ${String(exitCode)}`
+    );
+  }
+  return exitCode;
 }
 
 const IdRegexStr = "^[A-Za-z0-9_]+[A-Za-z0-9_-]*$";
