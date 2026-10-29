@@ -70,6 +70,7 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: npm ci
       - run: npm run lint
+      - run: npm run format:check
       - name: Typecheck
         env:
           ZOD: ${{ matrix.zod }}
