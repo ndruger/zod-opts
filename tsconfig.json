@@ -6,7 +6,7 @@
     "alwaysStrict": true,
     "noImplicitAny": true,
     "strictFunctionTypes": true,
-    "target": "ES2019",
+    "target": "ES2022",
     "module": "CommonJS",
     "sourceMap": true,
     "moduleResolution": "node",
