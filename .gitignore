@@ -8,4 +8,5 @@ token.json
 tsconfig.tsbuildinfo
 /.vscode
 /coverage
+/coverage-*
 /reference
