@@ -16,8 +16,9 @@ concurrency:
 
 jobs:
   # The workflows themselves: mistakes (actionlint, with shellcheck on the
-  # scripts), security problems (zizmor, see .github/zizmor.yml), and the
-  # commits the actions are pinned to (.github/workflows/actions.lock).
+  # scripts), security problems (zizmor, which treats the actions pinned in
+  # the lockfile as pinned), and the commits the actions are pinned to
+  # (.github/workflows/actions.lock).
   workflows:
     name: Lint the workflows
     runs-on: ubuntu-latest
@@ -38,9 +39,9 @@ jobs:
           tar -xzf "$RUNNER_TEMP/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" -C "$RUNNER_TEMP" actionlint
           "$RUNNER_TEMP/actionlint" -color
       - name: zizmor
-        uses: zizmorcore/zizmor-action@v0.7.1
+        uses: zizmorcore/zizmor-action@v0.8.1
         with:
-          version: 1.31.1
+          version: 1.32.0
           # Report in the job log instead of uploading SARIF to code scanning,
           # which would need the security-events permission.
           advanced-security: false
